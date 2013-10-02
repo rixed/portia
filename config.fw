@@ -1,0 +1,26 @@
+Configuration
+=============
+
+We have seen so far only 3 parameters taken from the configuration,
+all three being references to functions taking a file content as
+a string and returning substrings of interrest:
+
+- find_definitions, that spots new definitions
+
+- find_references, that spots references to definitions in definition bodies
+
+- find_inclusions, that spots declarations of other files to parse
+
+So that our Config module thus far is merely:
+
+@O@<config.ml@>==@{@-
+let find_definitions =
+    ref ((fun _txt -> []) : string -> (string * bool * string * int * int) list)
+let find_references =
+    ref ((fun _txt -> []) : string -> (string * int * int) list)
+let find_inclusions =
+    ref ((fun _txt -> []) : string -> string list)
+@}
+
+Notice that separate compilation of this module imposes that we have to
+declare the types of these references.

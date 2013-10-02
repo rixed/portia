@@ -1,0 +1,191 @@
+Code block definitions
+======================
+
+It is well known that naming things is the most difficult part in programming.
+This has to do with the fact that a large part of programming consists in
+inventing many simples but abstracts concept with no counterpart in actual life
+nor any abstractions from other intellectual fields.  Sometime we can borrow a
+term or two from mathematics but mostly we have to give names to things that
+are relevant only in our program, maybe not even for its full lifetime.
+
+So we have to constantly look for words close enough to what we actually mean
+that, with enough context it will be clear what we mean by them. Hopefully most
+words designate many different things so the reader is already well accustomed
+to figuring out a meaning from vague words and a context.
+
+So, now that this short introduction have hopefully lead my reader into
+leniency, let's ask ourself what the name of a program fragment should be.
+Should it be an "extract", considered this fragment is separated from the rest
+for display purpose?  Or a "phrase", considered it's part of a larger
+"discourse" (the program)?
+
+Or, if we forget what we manipulate to consider how we manipulate it,
+should it be called a "macro body"? Merely a "macro" or "body"? Or a
+"definition"?  This point of view is seducing since it makes our program a more
+general purpose text processor rather than a specialized tool for literate
+programming (of course a type or variable name is not really part of the
+running program and so cannot alter its behavior in any way, but I believe in
+the power of names to influence our reasoning about abstractions and that
+giving generic names help building generic programs).
+
+Let's call these code fragments "definitions", then.
+
+What information is there in a definition?
+In no specific order, we have seen so far we need:
+
+- its location used both for error reporting (file name, line number and
+  column) and for fetching it quickly on demand (offset and size in
+  bytes):
+
+@$@<Location@>==@{@-
+type location = { file : string ;
+                 mtime : float ;
+                lineno : int ;
+                 colno : int ;
+                offset : int ;
+                  size : int }@}
+
+  with the GNU convention that: "Line numbers should start from 1 at the
+  beginning of the file, and column numbers should start from 1 at the
+  beginning of the line.".
+  Rather than having a single location, we want to allow for a definition
+  to be split across many locations (the body of the definition is than the
+  concatenation of all fragment in order of appearance).
+  Note that the mtime is there so that we can tell, when fetching
+  the body, that the file have not changed since we collected
+  this definition.
+
+- an identifier (unique for the file its located in) which can be any string:
+@$@<DefName@>==@{type id = string@}
+
+- a flag to tell us if this definition is supposed to be output in a file.
+
+The output flag have several consequences: of course, the expanded body of this
+definition will be written into a file (which name will be the identifier); and
+you are not allowed to refer to this definition from another one.
+
+The user should be warned about any code fragment that is not, directly or
+indirectly, referenced from an output definition.
+
+@$@<DefinitionType@>==@{@-
+@<Location@>
+@<DefName@>
+type t = {  loc : location ;
+           locs : location list ; (* reverse order *)
+             id : id ;
+         output : bool }
+@}
+
+Notice that there are always at least one location (the first one, "loc").
+
+It's always a good idea to write proper filters for any new type. This may
+looks fastidious but you are actually doing yourself a favor: better have these
+printers ready before they are needed than to have to write them quickly while
+struggling with a bug. Especially when using Batteries which make writing and
+using such printer more convenient than stock OCaml.
+
+So here they are:
+
+@$@<Definitions@>+=@{@-
+let location_print fmt loc =
+    Printf.fprintf fmt "%s:%d.%d-%d"
+        loc.file loc.lineno loc.colno (loc.colno+loc.size)
+
+let mtime_print = Float.print (* TODO: user friendly date&time? *)
+
+let print fmt t =
+    Printf.fprintf fmt "%s.%s@@%a"
+        t.loc.file t.id
+        location_print t.loc
+@}
+
+Now obviously we also want to fetch a definition body from its file (checking
+mtime):
+
+@$@<Definitions@>+=@{@-
+exception FileChanged of string
+let body t =
+    let open Unix in
+    let fetch_loc loc =
+        let fname = loc.file in
+        if (stat fname).st_mtime > loc.mtime then
+            raise (FileChanged fname) ;
+        let fd = openfile fname [O_RDONLY] 0 in
+        lseek fd loc.offset SEEK_SET |> ignore ;
+        let str = String.create loc.size in
+        let act_sz = read fd str 0 loc.size in
+        close fd ;
+        (* no short read on ordinary files *)
+        assert (act_sz = loc.size) ;
+        str in
+    let locs = t.loc :: List.rev t.locs in
+    List.map fetch_loc locs |>
+    String.concat ""
+@}
+
+Then, we will need a way to add definitions to a global registry, and the
+associated lookup function. Definitions are created from a file, offset and
+length (line number and column number are not given and will be computed when
+registering, so that plugins author work is limited to the minimum) and of
+course the identifier for the definition.
+
+@$@<Definitions@>+=@{@-
+
+let registry = Hashtbl.create 31
+
+let add (id, output, fname, off, sz) =
+    let loc = location_in_file fname off sz in
+    Hashtbl.modify_opt id (function
+        | None   -> Some { loc ; id ; output ; locs = [] }
+        | Some t -> Some { t with locs = loc :: t.locs })
+        registry
+
+let lookup id =
+    Hashtbl.find registry id
+@}
+
+Where location_in_file is responsible to return q correct location
+(up to proper line and column numbers) from the file name, offset
+and size (so that the plugin writers don't have to worry about co;puting
+these file locations) :
+
+@$@<LocationInFile@>==@{@-
+let location_in_file file offset size =
+    { file ; offset ; size ;
+      (* TODO *)
+      mtime = 0.0 ;
+      lineno = 0 ;
+      colno = 0 }
+@}
+
+Now the last part: expansion. Given a function Config.find_references (supplied
+by the configuration) that's able to spot all expansion points from a non
+expanded body, and the registry of all known definitions, let's build a
+function that will return the complete expanded body (or signal a problem).
+
+@$@<Definitions@>+=@{@-
+let rec expanded_body t =
+    let unexpanded = body t in
+    (* find_references returns a list of (id,start_offset,stop_offset) *)
+    let refs = !Config.find_references unexpanded in
+    List.fold_left (fun (txt,last_stop) (id,start,stop) ->
+        let t' = lookup id in (* TODO: handle Not_found *)
+        assert (start >= last_stop) ;
+        txt ^
+        String.sub unexpanded last_stop (start - last_stop) ^
+        expanded_body t',
+        stop)
+        ("", 0) refs |>
+    fst
+@}
+
+With these functions we are now ready to start the real job of parsing input
+files(s) and writing output definitions.
+
+@O@<definition.ml@>==@{@-
+open Batteries
+
+@<DefinitionType@>
+@<LocationInFile@>
+@<Definitions@>
+@}

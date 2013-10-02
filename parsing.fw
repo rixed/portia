@@ -1,0 +1,162 @@
+Parsing
+=======
+
+Parsing is a very pretentious word, since we merely need to
+spot two things in the input file:
+
+- optional include command (with its filename parameter) to instruct us
+how to gather other file name to inspect;
+
+- code definitions;
+
+- reference to other definitions in the body of a definition;
+
+For now we do not want to impose any format to these marks so in all
+generality we are going to read in memory a whole file and ask a configuration
+provided function to return the list of additional files to scan and the list
+of definitions that can be found in the file content.
+
+So "parsing" is just:
+
+@$@<Parsing@>==@{@-
+let read_whole_file file =
+    let ic = Unix.(openfile file [O_RDONLY] 0 |> input_of_descr) in
+    IO.read_all ic (* autoclosed *)
+
+let rec parse file =
+    let txt = read_whole_file file in
+    !Config.find_definitions txt |>
+    List.iter Definition.add ;
+    !Config.find_inclusions txt |>
+    List.iter parse
+@}
+
+That we can group, with some helper functions to be defined later, in a parse
+module:
+
+@O@<parse.ml@>==@{@-
+open Batteries
+
+@<Parsing@>
+@<ParsingHelpers@>
+@}
+
+Also, many tools can attach several code fragments to the same name, with the
+expected output being constituted of the concatenation of these fragments.
+To handle this, we will merely register several definitions with the same name,
+and when writing the output of a given definition we will append all bodies in
+order of appearance (ie. sorted by filename and line number).
+
+FunnelWeb
+=========
+
+Now of course the real difficulty lies in the find_definitions and
+find_inclusions functions, which by default could be the one we need to
+bootstrap (ie. funnelweb compatible).
+
+So let's implement at first the simpler of both. For inclusion, funnelweb uses
+a very straightforward syntax: a line consisting only of "@@i somefilename".
+This simple regular expressions will easily collect all such commands for us:
+
+@$@<RegexForInclusion@>==@{"^@@i +\\(.+\\) *$"@}
+
+Which leads to this find_inclusions function:
+
+@$@<FW_FindInclusions@>==@{@-
+let find_inclusions =
+    let re = Str.regexp @<RegexForInclusion@> in
+    fold_all_groups (fun l p -> match l with
+        | [Some f] -> f::p
+        | _ -> assert false) [] re
+@}
+
+With the almighty @{fold_all_groups@}, folding over all groups matched in a
+given string (the passed regular expression must have nbg subgroups):
+
+@$@<ParsingHelpers@>==@{@-
+let fold_all_groups f p re str nbg =
+    let open Str in
+    let rec aux p o =
+        try search_forward re str o |> ignore ;
+            let groups = ref [] in
+            for n = 0 to nbg do
+                let n' = nbg - n in
+                groups :=
+                    (try Some (
+                            matched_group n' str,
+                            group_beginning n',
+                            group_end n'
+                         )
+                    with Not_found -> None) :: !groups
+            done ;
+            aux (f !groups p) (Str.match_end ())
+        with Not_found ->
+            p in
+    aux p 0
+@}
+
+Regarding code definitions, the regular expression is more complex but can
+still handle the job. We have to take greater care here since code blocks
+typically spans several lines and regular expressions are greedy. We handle
+this by forbidding the ending marker ('@@' followed by '}') from the definition;
+hopefully this marker is both improbable and short.
+
+We end up with this regular expression:
+
+@$@<RegexForDefinition@>==@{@-
+"^@@\\(\\$\\|O\\)@@<\\([^@@]+\\)@@>\\(==\\|\\+=\\)@@{\
+\\(@@-\n\\)?\\(\\([^@@]\\|@@[^}]\\)*\\)@@}"@}
+
+Here we met another difficulty: we must be able to write strings and regular
+expressions that describes funnelweb special commands without triggering
+funnelweb (nor portia in funnelweb mode) to interpret them as actual commands!
+In other words we must write a regular expression that does not match itself.
+The easy trick is to split the regular expression into several lines right in
+the middle of problematic token sequences.
+
+With the corresponding find_definitions:
+
+@$@<FW_FindDefinitions@>==@{@-
+let find_definitions =
+    let re = Str.regexp @<RegexForDefinition@> in
+    fold_all_groups (fun l p -> match l with
+        | [Some (c, _, _); Some name; _; _; Some body] ->
+            (c = "O", name, body) :: p
+        | _ -> assert false) [] re
+@}
+
+Now to finish with our regular expressions, we must be able to spot references
+to other definitions from within definition bodies. Funnelweb uses a
+straightforward syntax for that, again relying on the unlikelihood of the
+(quite short) sequence of '@@' followed by '<' ot '>':
+
+@$@<RegexForReference@>==@{@-
+"@@<\\([^@@]+\\)@@>"@}
+
+With the corresponding find_references (identiqual to find_inclusions but with
+another regular expression):
+
+@$@<FW_FindReferences@>==@{@-
+let find_references =
+    let re = Str.regexp @<RegexForReference@> in
+    fold_all_groups (fun l p -> match l with
+        | [Some f] -> f::p
+        | _ -> assert false) [] re
+@}
+
+This function will be used later when untangling code fragments into output
+files.
+
+Of course, these regular expressions do not form a proper parser for funnelweb
+syntax, which is much richer than that. It's enough, though, to bootstrap
+Portia source code, so we will leave this funnelweb module here and return to
+the more interesting topic of generating output files.
+
+@O@<funnelweb.ml@>==@{@-
+open Batteries
+open Parse
+
+@<FW_FindInclusions@>
+@<FW_FindDefinitions@>
+@<FW_FindReferences@>
+@}

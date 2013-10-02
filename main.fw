@@ -1,0 +1,71 @@
+The program basically reads its configuration file (or load its compiled
+configuration file), then proceed with reading the given file, building a
+dictionary of block definitions and loading additional files along the way,
+keeping track of code blocks definitions and modification time of the used
+files, and checking everything.
+
+Then it outputs the code, rereading the files to fetch code blocks so that we
+do not have to hold in memory a quantity of information equivalent of the
+resulting source code (for I firmly believe literate programming suits bigger
+programs as well).
+
+So the basic skeleton, given a configuration file backend and a list
+of source files to proceed @{srcfile@}, looks like:
+
+@$@<Skeleton@>==@{
+load_lib !libdir !backend ;
+List.iter Parse.parse !srcfiles ;
+Output.all ()
+@}
+
+Notice that configuration does not appear here, nor does harvested definitions.
+They lies in global variables, which suits this short lived program just fine.
+We won't worry about configuration parameters yet. Suffice to say that all of
+these global parameters, regular expressions and functions (remember some
+filters may be functions) are references defined in a module unambiguously
+named @{Config@}.
+
+By loading a conf, we merely want to load a compiled .cmo file:
+
+@$@<ConfigLoad@>==@{@-
+let load_lib libdir fname =
+    let libname = libdir ^"/"^ fname ^".cmo" in
+    Dynlink.(loadfile (adapt_filename libname))
+@}
+
+This is enough for a user to choose between several backends (funnelweb, ...).
+
+So we only need this entry point to parse co;;and line arguments and we are
+done with the boring work:
+
+@$@<EntryPoint@>==@{@-
+let main =
+    let backend = ref "funnelweb" in
+    let libdir = ref "." in
+    let srcfiles = ref [] in
+    let addsrc f = srcfiles := f :: !srcfiles in
+    Arg.(parse
+        [ "-syntax", Set_string backend,
+                     "Name of the backend to use for parsing files\
+                      (default to funnelweb)" ;
+          "-libdir", Set_string libdir,
+                     "Where to read backends from" ]
+        addsrc
+        "portia - literate programming preprocessor\n\
+         \n\
+         portia [options] files...\n\
+         Will output source code from given files.\n") ;
+    @<Skeleton@>
+@}
+
+So we have the Main module (linked last):
+
+@O@<main.ml@>==@{@-
+open Batteries
+
+@<ConfigLoad@>
+@<EntryPoint@>
+@}
+
+Let's focus now on our main data type, the code block definition.
+

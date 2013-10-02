@@ -1,0 +1,34 @@
+Output
+======
+
+Once all definitions have been "registered", we can iterate over
+all which must be output to a file, retrieve its expanded body
+then write it into the file:
+
+@$@<Output@>==@{@-
+open Definition
+
+(* output a given definition *)
+let definition filename def =
+    if def.output then (
+        let text = expanded_body def in
+        output_file ~filename ~text
+    )
+
+(* output all registered definitions *)
+let all () =
+    Hashtbl.iter definition registry
+@}
+
+And that's all we need in out Output module:
+
+@O@<output.ml@>==@{@-
+open Batteries
+
+@<Output@>
+@}
+
+
+We have glossed over many details to get there: the command line
+interface, the configuration...
+
