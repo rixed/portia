@@ -110,14 +110,7 @@ let body t =
         let fname = loc.file in
         if (stat fname).st_mtime > loc.mtime then
             raise (FileChanged fname) ;
-        let fd = openfile fname [O_RDONLY] 0 in
-        lseek fd loc.offset SEEK_SET |> ignore ;
-        let str = String.create loc.size in
-        let act_sz = read fd str 0 loc.size in
-        close fd ;
-        (* no short read on ordinary files *)
-        assert (act_sz = loc.size) ;
-        str in
+        read_file fname loc.offset loc.size in
     let locs = t.loc :: List.rev t.locs in
     List.map fetch_loc locs |>
     String.concat ""
@@ -152,10 +145,10 @@ these file locations) :
 @$@<LocationInFile@>==@{@-
 let location_in_file file offset size =
     let mtime = Unix.((stat file).st_mtime) in
-    { file ; offset ; size ; mtime ;
-      (* TODO *)
-      lineno = 0 ;
-      colno = 0 }
+    let txt = read_file file 0 offset in
+    let colno = colno_at txt
+    and lineno = lineno_at offset txt in
+    { file ; offset ; size ; mtime ; lineno ; colno }
 @}
 
 Now the last part: expansion. Given a function Config.find_references (supplied
@@ -180,16 +173,26 @@ let rec expanded_body t =
                 txt ^
                 String.sub unexpanded last_stop (start - last_stop) in
             let colno = colno_at prec in
-            prec ^ indent colno (expanded_body t'),
-            stop)
+            let txt = prec ^ indent colno (expanded_body t') in
+            (* add a linenum indication that we are back in this block *)
+            let ln = linenum (t.loc.lineno + (lineno_at stop unexpanded))
+                             t.loc.file in
+            txt ^
+            (if String.length txt > 0 &&
+               txt.[String.length txt - 1] != '\n' then
+                "\n" else "") ^
+            ln, stop)
             ("", 0) refs in
     (* Complete with what's left *)
     let rest = String.length unexpanded - last_stop in
-    txt ^ String.sub unexpanded last_stop rest
+    let txt = txt ^ String.sub unexpanded last_stop rest in
+    (* Add line number information. *)
+    linenum t.loc.lineno t.loc.file ^ txt
 @}
 
 Where each substituted definition is properly indented according to its
-insertion point, using these small helpers:
+insertion point. We must now complete this module with the functions
+we used up to here for helping dealing with text files and locations:
 
 @$@<TxtHelpers@>==@{@-
 let indent =
@@ -198,14 +201,44 @@ let indent =
     fun n str ->
         if n = 0 then str else
         let tab = String.make n ' ' in
-        global_replace re ("\n"^tab^"\1") str
+        global_replace re ("\n"^tab^"\\1") str
 
+(* first char is at column 0 *)
 let colno_at txt =
     let rec aux colno p =
         if p = 0 || txt.[p-1] = '\n' then colno else
         aux (colno+1) (p-1) in
     aux 0 (String.length txt)
+
+(* first line is 0 *)
+let lineno_at pos txt =
+    let rec aux p n =
+        if p >= pos then n else
+        aux (p+1) (if txt.[p] = '\n' then n+1 else n) in
+    aux 0 0
+
+let read_file fname offset size =
+    let open Unix in
+    let fd = openfile fname [O_RDONLY] 0 in
+    lseek fd offset SEEK_SET |> ignore ;
+    let str = String.create size in
+    let act_sz = read fd str 0 size in
+    close fd ;
+    (* no short read on ordinary files *)
+    assert (act_sz = size) ;
+    str
+
+let linenum lineno fname =
+    Printf.sprintf "# %d \"%s\"\n" lineno fname
 @}
+
+One word about the linenum directive in OCaml. It is documented in the chapter
+6.1 (lexical conventions) of the OCaml manual, and from this documentation
+it appears that it is not constrained to appear alone on a line. We do make some
+effort to place these directives on dedicated lines, in order to generate better
+looking source files.
+Also, notice that we must insert a linenum directive at the insertion point of
+each definition body and after each expansion to return to previous location.
 
 With these functions we are now ready to start the real job of parsing input
 files(s) and writing output definitions.
