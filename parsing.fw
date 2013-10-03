@@ -90,7 +90,7 @@ let fold_all_groups f p re str =
             aux (f groups p) (Str.match_end ())
         with Not_found ->
             p in
-    aux p 0
+    aux p 0 |> List.rev
 @}
 
 Regarding code definitions, the regular expression is more complex but can
@@ -133,7 +133,7 @@ straightforward syntax for that, again relying on the unlikelihood of the
 (quite short) sequence of '@@' followed by '<' ot '>':
 
 @$@<RegexForReference@>==@{@-
-"@@<\\([^@@]+\\)@@>"@}
+"\\(@@<\\([^@@]+\\)@@>\\)"@}
 
 With the corresponding find_references (identical to find_inclusions but with
 another regular expression):
@@ -142,17 +142,29 @@ another regular expression):
 let find_references =
     let re = Str.regexp @<RegexForReference@> in
     fold_all_groups (fun l p -> match l with
-        | [Some f] -> f::p
+        | [Some (_, start, stop); Some (id, _, _)] -> (id, start, stop)::p
         | _ -> assert false) [] re
 @}
 
 This function will be used later when untangling code fragments into output
 files.
 
-Of course, these regular expressions do not form a proper parser for funnelweb
-syntax, which is much richer than that. It's enough, though, to bootstrap
-Portia source code, so we will leave this funnelweb module here and return to
-the more interesting topic of generating output files.
+Last and least, funnelweb (and probably other systems as well) uses an escape
+character that can be used to include its control character ('@@') in the
+source code. Thus, before outputing the code we must run a final scan to
+unquote all these characters, especially since we have made a heavy use of this
+quoting mechanism in this document:
+
+@$@<FW_Postprocess@>==@{@-
+let postprocess str =
+    String.nreplace ~str ~sub:"@@@@" ~by:"@@"
+@}
+
+Of course, all these regular expressions and substring replacement do not add
+up to a proper parser for funnelweb syntax, which is much richer than that.
+It's enough, though, to bootstrap Portia source code, so we will leave this
+funnelweb module here and return to the more interesting topic of generating
+output files.
 
 @O@<funnelweb.ml@>==@{@-
 open Batteries
@@ -161,9 +173,11 @@ open Parse
 @<FW_FindInclusions@>
 @<FW_FindDefinitions@>
 @<FW_FindReferences@>
+@<FW_Postprocess@>
 
 let () =
     Config.find_definitions := find_definitions ;
     Config.find_references  := find_references ;
-    Config.find_inclusions  := find_inclusions
+    Config.find_inclusions  := find_inclusions ;
+    Config.postprocess      := postprocess
 @}

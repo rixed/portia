@@ -11,6 +11,9 @@ a string and returning substrings of interrest:
 
 - find_inclusions, that spots declarations of other files to parse
 
+- postprocess, that perform whatever modification is required on the expanded
+  code
+
 So that our Config module thus far is merely:
 
 @O@<config.ml@>==@{@-
@@ -20,6 +23,8 @@ let find_references =
     ref ((fun _txt -> []) : string -> (string * int * int) list)
 let find_inclusions =
     ref ((fun _txt -> []) : string -> string list)
+let postprocess =
+    ref ((fun txt -> txt) : string -> string)
 @}
 
 Notice that separate compilation of this module imposes that we have to

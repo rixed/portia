@@ -11,7 +11,8 @@ open Definition
 (* output a given definition *)
 let definition filename def =
     if def.output then (
-        let text = expanded_body def in
+        let text = expanded_body def |>
+                   !Config.postprocess in
         output_file ~filename ~text
     )
 
