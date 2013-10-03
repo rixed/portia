@@ -14,7 +14,7 @@ REQUIRES = batteries dynlink
 
 FW_SOURCES = $(wildcard *.fw)
 PROG_SOURCES = config.ml definition.ml parse.ml output.ml main.ml
-BACKEND_SOURCES = funnelweb.ml
+BACKEND_SOURCES = funnelweb.ml ocaml.ml c.ml
 GEN_SOURCES = $(PROG_SOURCES) $(BACKEND_SOURCES)
 
 all: $(BACKEND_SOURCES:.ml=.cmo)
@@ -31,9 +31,11 @@ fwdepend: $(FW_SOURCES)
 include fwdepend
 
 $(GEN_SOURCES): $(FW_SOURCES)
-	@if test -x portia.byte && test -e funnelweb.cmo ; then \
+	@if test -x portia.byte && \
+		test -e funnelweb.cmo && \
+		test -e ocaml.cmo ; then \
 		echo "Using Portia :-)" ;\
-		./portia.byte intro.fw ;\
+		./portia.byte -syntax ocaml intro.fw ;\
 	 else \
 		echo "Using Funnelweb :-(" ;\
 		fw intro.fw ;\

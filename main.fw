@@ -13,7 +13,7 @@ So the basic skeleton, given a configuration file backend and a list
 of source files to proceed @{srcfile@}, looks like:
 
 @$@<Skeleton@>==@{
-load_lib !libdir !backend ;
+List.iter (load_lib !libdir) !backends ;
 List.iter Parse.parse !srcfiles ;
 Output.all ()
 @}
@@ -41,17 +41,17 @@ done with the boring work:
 
 @$@<EntryPoint@>==@{@-
 let main =
-    let backend = ref "funnelweb" in
+    let backends = ref ["funnelweb"] in
     let libdir = ref "." in
     let srcfiles = ref [] in
-    let addsrc f = srcfiles := f :: !srcfiles in
+    let addlst l s = l := s :: !l in
     Arg.(parse
-        [ "-syntax", Set_string backend,
-                     "Name of the backend to use for parsing files\
+        [ "-syntax", String (addlst backends),
+                     "Name of the backend to use for parsing files \
                       (default to funnelweb)" ;
           "-libdir", Set_string libdir,
                      "Where to read backends from" ]
-        addsrc
+        (addlst srcfiles)
         "portia - literate programming preprocessor\n\
          \n\
          portia [options] files...\n\

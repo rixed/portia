@@ -14,6 +14,8 @@ a string and returning substrings of interrest:
 - postprocess, that perform whatever modification is required on the expanded
   code
 
+- linenum, a function to output line number indication for the compiler
+
 So that our Config module thus far is merely:
 
 @O@<config.ml@>==@{@-
@@ -25,6 +27,8 @@ let find_inclusions =
     ref ((fun _txt -> []) : string -> string list)
 let postprocess =
     ref ((fun txt -> txt) : string -> string)
+let linenum =
+    ref ((fun _n _f -> "") : int -> string -> string)
 @}
 
 Notice that separate compilation of this module imposes that we have to

@@ -175,11 +175,14 @@ let rec expanded_body t =
             let colno = colno_at prec in
             let txt = prec ^ indent colno (expanded_body t') in
             (* add a linenum indication that we are back in this block *)
-            let ln = linenum (t.loc.lineno + (lineno_at stop unexpanded))
-                             t.loc.file in
+            let ln =
+                !Config.linenum
+                    (t.loc.lineno + (lineno_at stop unexpanded))
+                    t.loc.file in
             txt ^
-            (if String.length txt > 0 &&
-               txt.[String.length txt - 1] != '\n' then
+            (if String.length ln > 0 &&
+                String.length txt > 0 &&
+                txt.[String.length txt - 1] != '\n' then
                 "\n" else "") ^
             ln, stop)
             ("", 0) refs in
@@ -187,7 +190,7 @@ let rec expanded_body t =
     let rest = String.length unexpanded - last_stop in
     let txt = txt ^ String.sub unexpanded last_stop rest in
     (* Add line number information. *)
-    linenum t.loc.lineno t.loc.file ^ txt
+    !Config.linenum t.loc.lineno t.loc.file ^ txt
 @}
 
 Where each substituted definition is properly indented according to its
@@ -227,9 +230,28 @@ let read_file fname offset size =
     (* no short read on ordinary files *)
     assert (act_sz = size) ;
     str
+@}
 
+
+Regarding linenum, this function depends on the programming language
+used. The default implementation from Config will not output linenum
+directoves. But dedicated backends are easy to write. First, for
+ocaml:
+
+@O@<ocaml.ml@>==@{@-
 let linenum lineno fname =
     Printf.sprintf "# %d \"%s\"\n" lineno fname
+
+let () = Config.linenum := linenum
+@}
+
+and for C:
+
+@O@<c.ml@>==@{@-
+let linenum lineno fname =
+    Printf.sprintf "#line %d \"%s\"\n" lineno fname
+
+let () = Config.linenum := linenum
 @}
 
 One word about the linenum directive in OCaml. It is documented in the chapter
