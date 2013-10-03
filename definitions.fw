@@ -133,7 +133,7 @@ course the identifier for the definition.
 
 let registry = Hashtbl.create 31
 
-let add (id, output, fname, off, sz) =
+let add id output fname off sz =
     let loc = location_in_file fname off sz in
     Hashtbl.modify_opt id (function
         | None   -> Some { loc ; id ; output ; locs = [] }
@@ -151,9 +151,9 @@ these file locations) :
 
 @$@<LocationInFile@>==@{@-
 let location_in_file file offset size =
-    { file ; offset ; size ;
+    let mtime = Unix.((stat file).st_mtime) in
+    { file ; offset ; size ; mtime ;
       (* TODO *)
-      mtime = 0.0 ;
       lineno = 0 ;
       colno = 0 }
 @}
@@ -166,17 +166,20 @@ function that will return the complete expanded body (or signal a problem).
 @$@<Definitions@>+=@{@-
 let rec expanded_body t =
     let unexpanded = body t in
-    (* find_references returns a list of (id,start_offset,stop_offset) *)
+    Printf.printf "expand '%s'\n" unexpanded ;
+    (* find_references returns a list of (id, start_offset, stop_offset) *)
     let refs = !Config.find_references unexpanded in
-    List.fold_left (fun (txt,last_stop) (id,start,stop) ->
-        let t' = lookup id in (* TODO: handle Not_found *)
-        assert (start >= last_stop) ;
-        txt ^
-        String.sub unexpanded last_stop (start - last_stop) ^
-        expanded_body t',
-        stop)
-        ("", 0) refs |>
-    fst
+    let txt, last_stop =
+        List.fold_left (fun (txt,last_stop) (id,start,stop) ->
+            let t' = lookup id in (* TODO: handle Not_found *)
+            assert (start >= last_stop) ;
+            txt ^
+            String.sub unexpanded last_stop (start - last_stop) ^
+            expanded_body t',
+            stop)
+            ("", 0) refs in
+    txt ^
+    String.sub unexpanded last_stop (String.length unexpanded - last_stop)
 @}
 
 With these functions we are now ready to start the real job of parsing input

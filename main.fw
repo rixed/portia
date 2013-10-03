@@ -30,6 +30,7 @@ By loading a conf, we merely want to load a compiled .cmo file:
 @$@<ConfigLoad@>==@{@-
 let load_lib libdir fname =
     let libname = libdir ^"/"^ fname ^".cmo" in
+    Printf.printf "loading lib %s\n" libname ;
     Dynlink.(loadfile (adapt_filename libname))
 @}
 

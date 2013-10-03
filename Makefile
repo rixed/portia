@@ -17,7 +17,10 @@ PROG_SOURCES = config.ml definition.ml parse.ml output.ml main.ml
 BACKEND_SOURCES = funnelweb.ml
 GEN_SOURCES = $(PROG_SOURCES) $(BACKEND_SOURCES)
 
-all: portia.byte $(BACKEND_SOURCES:.ml=.cmo)
+all: $(BACKEND_SOURCES:.ml=.cmo)
+
+# dynamically loaded modules must be rebuild after portia.byte has changed
+$(BACKEND_SOURCES:.ml=.cmo): portia.byte
 
 doc: portia.pdf portia.html
 

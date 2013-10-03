@@ -26,7 +26,8 @@ let read_whole_file file =
 let rec parse file =
     let txt = read_whole_file file in
     !Config.find_definitions txt |>
-    List.iter Definition.add ;
+    List.iter (fun (id, output, start, stop) ->
+        Definition.add id output file start (stop-start)) ;
     !Config.find_inclusions txt |>
     List.iter parse
 @}
@@ -66,30 +67,27 @@ Which leads to this find_inclusions function:
 let find_inclusions =
     let re = Str.regexp @<RegexForInclusion@> in
     fold_all_groups (fun l p -> match l with
-        | [Some f] -> f::p
+        | [Some (f, _, _)] -> f::p
         | _ -> assert false) [] re
 @}
 
 With the almighty @{fold_all_groups@}, folding over all groups matched in a
-given string (the passed regular expression must have nbg subgroups):
+given string:
 
 @$@<ParsingHelpers@>==@{@-
-let fold_all_groups f p re str nbg =
+let fold_all_groups f p re str =
     let open Str in
     let rec aux p o =
         try search_forward re str o |> ignore ;
-            let groups = ref [] in
-            for n = 0 to nbg do
-                let n' = nbg - n in
-                groups :=
-                    (try Some (
-                            matched_group n' str,
-                            group_beginning n',
-                            group_end n'
-                         )
-                    with Not_found -> None) :: !groups
-            done ;
-            aux (f !groups p) (Str.match_end ())
+            let rec fetch_grps n groups =
+                try let g = try Some (matched_group n str,
+                                      group_beginning n,
+                                      group_end n)
+                            with Not_found -> None in
+                    fetch_grps (n+1) (g::groups)
+                with Invalid_argument _ -> List.rev groups in
+            let groups = fetch_grps 1 [] in
+            aux (f groups p) (Str.match_end ())
         with Not_found ->
             p in
     aux p 0
@@ -119,9 +117,13 @@ With the corresponding find_definitions:
 @$@<FW_FindDefinitions@>==@{@-
 let find_definitions =
     let re = Str.regexp @<RegexForDefinition@> in
-    fold_all_groups (fun l p -> match l with
-        | [Some (c, _, _); Some name; _; _; Some body] ->
-            (c = "O", name, body) :: p
+    fold_all_groups (fun l p ->
+        Printf.printf "found def: %a\n"
+            (List.print (Option.print
+                (Tuple3.print String.print Int.print Int.print))) l ;
+        match l with
+        | [Some (c, _, _); Some (id, _, _); _; _; Some (_, start, stop); _] ->
+            (id, c = "O", start, stop) :: p
         | _ -> assert false) [] re
 @}
 
@@ -133,7 +135,7 @@ straightforward syntax for that, again relying on the unlikelihood of the
 @$@<RegexForReference@>==@{@-
 "@@<\\([^@@]+\\)@@>"@}
 
-With the corresponding find_references (identiqual to find_inclusions but with
+With the corresponding find_references (identical to find_inclusions but with
 another regular expression):
 
 @$@<FW_FindReferences@>==@{@-
@@ -159,4 +161,9 @@ open Parse
 @<FW_FindInclusions@>
 @<FW_FindDefinitions@>
 @<FW_FindReferences@>
+
+let () =
+    Config.find_definitions := find_definitions ;
+    Config.find_references  := find_references ;
+    Config.find_inclusions  := find_inclusions
 @}
