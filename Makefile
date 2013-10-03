@@ -72,6 +72,9 @@ portia.opt:  $(PROG_SOURCES:.ml=.cmx)
 clean:
 	@$(RM) -f *.[aso] *.cmi *.annot *.lis *.tex *.pdf *.dvi *.log *.html $(GEN_SOURCES) $(PROG_SOURCES:.ml=.cmo) all_tests.ml depend fwdepend
 
+distclean: clean
+	@$(RM) $(BACKEND_SOURCES:.ml=.cmo) portia.byte
+
 loc: $(GEN_SOURCES)
 	@cat $^ | wc -l
 

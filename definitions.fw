@@ -176,14 +176,35 @@ let rec expanded_body t =
         List.fold_left (fun (txt,last_stop) (id,start,stop) ->
             let t' = lookup id in (* TODO: handle Not_found *)
             assert (start >= last_stop) ;
-            txt ^
-            String.sub unexpanded last_stop (start - last_stop) ^
-            expanded_body t',
+            let prec =
+                txt ^
+                String.sub unexpanded last_stop (start - last_stop) in
+            let colno = colno_at prec in
+            prec ^ indent colno (expanded_body t'),
             stop)
             ("", 0) refs in
     (* Complete with what's left *)
     let rest = String.length unexpanded - last_stop in
     txt ^ String.sub unexpanded last_stop rest
+@}
+
+Where each substituted definition is properly indented according to its
+insertion point, using these small helpers:
+
+@$@<TxtHelpers@>==@{@-
+let indent =
+    let open Str in
+    let re = regexp "\n\\([^\n]\\)" in
+    fun n str ->
+        if n = 0 then str else
+        let tab = String.make n ' ' in
+        global_replace re ("\n"^tab^"\1") str
+
+let colno_at txt =
+    let rec aux colno p =
+        if p = 0 || txt.[p-1] = '\n' then colno else
+        aux (colno+1) (p-1) in
+    aux 0 (String.length txt)
 @}
 
 With these functions we are now ready to start the real job of parsing input
@@ -193,6 +214,7 @@ files(s) and writing output definitions.
 open Batteries
 
 @<DefinitionType@>
+@<TxtHelpers@>
 @<LocationInFile@>
 @<Definitions@>
 @}
