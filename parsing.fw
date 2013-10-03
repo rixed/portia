@@ -118,9 +118,9 @@ With the corresponding find_definitions:
 let find_definitions =
     let re = Str.regexp @<RegexForDefinition@> in
     fold_all_groups (fun l p ->
-        Printf.printf "found def: %a\n"
+        (*Printf.printf "found def: %a\n"
             (List.print (Option.print
-                (Tuple3.print String.print Int.print Int.print))) l ;
+                (Tuple3.print String.print Int.print Int.print))) l ;*)
         match l with
         | [Some (c, _, _); Some (id, _, _); _; _; Some (_, start, stop); _] ->
             (id, c = "O", start, stop) :: p

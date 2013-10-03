@@ -166,12 +166,12 @@ function that will return the complete expanded body (or signal a problem).
 @$@<Definitions@>+=@{@-
 let rec expanded_body t =
     let unexpanded = body t in
-    Printf.printf "expand '%s'\n" unexpanded ;
+    (*Printf.printf "expand '%s'\n" unexpanded ;*)
     (* find_references returns a list of (id, start_offset, stop_offset) *)
     let refs = !Config.find_references unexpanded in
     (* TODO: sort this list according to start_offset *)
-    Printf.printf "found references: %a\n"
-        (List.print (Tuple3.print String.print Int.print Int.print)) refs ;
+    (*Printf.printf "found references: %a\n"
+        (List.print (Tuple3.print String.print Int.print Int.print)) refs ;*)
     let txt, last_stop =
         List.fold_left (fun (txt,last_stop) (id,start,stop) ->
             let t' = lookup id in (* TODO: handle Not_found *)

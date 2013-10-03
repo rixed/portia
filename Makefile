@@ -30,8 +30,14 @@ fwdepend: $(FW_SOURCES)
 	done > $@
 include fwdepend
 
-$(GEN_SOURCES):
-	fw intro.fw
+$(GEN_SOURCES): $(FW_SOURCES)
+	@if test -x portia.byte && test -e funnelweb.cmo ; then \
+		echo "Using Portia :-)" ;\
+		./portia.byte intro.fw ;\
+	 else \
+		echo "Using Funnelweb :-(" ;\
+		fw intro.fw ;\
+	 fi
 
 # We'd be glad to depend on *.ml but ocamldep is so slow...
 # Use "make -B depend" when you know you changed dependancies.
@@ -64,7 +70,7 @@ portia.opt:  $(PROG_SOURCES:.ml=.cmx)
 	dvipdf $< $@
 
 clean:
-	@$(RM) -f *.cm[ioxa] *.cmx[as] *.[aso] *.byte *.opt *.annot *.lis *.tex *.pdf *.dvi *.log *.html $(GEN_SOURCES) all_tests.ml depend fwdepend
+	@$(RM) -f *.[aso] *.cmi *.annot *.lis *.tex *.pdf *.dvi *.log *.html $(GEN_SOURCES) $(PROG_SOURCES:.ml=.cmo) all_tests.ml depend fwdepend
 
 loc: $(GEN_SOURCES)
 	@cat $^ | wc -l
