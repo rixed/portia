@@ -1,5 +1,6 @@
-Code block definitions
-======================
+// vim:filetype=asciidoc expandtab spell spelllang=en
+
+== Code block definitions
 
 It is well known that naming things is the most difficult part in programming.
 This has to do with the fact that a large part of programming consists in
@@ -37,6 +38,8 @@ In no specific order, we have seen so far we need:
   column) and for fetching it quickly on demand (offset and size in
   bytes):
 
+[source,ml]
+----
 @$@<Location@>==@{@-
 type location = { file : string ;
                  mtime : float ;
@@ -44,7 +47,7 @@ type location = { file : string ;
                  colno : int ;
                 offset : int ;
                   size : int }@}
-
+----
   with the GNU convention that: "Line numbers should start from 1 at the
   beginning of the file, and column numbers should start from 1 at the
   beginning of the line.".
@@ -56,7 +59,11 @@ type location = { file : string ;
   this definition.
 
 - an identifier (unique for the file its located in) which can be any string:
+
+[source,ml]
+----
 @$@<DefName@>==@{type id = string@}
+----
 
 - a flag to tell us if this definition is supposed to be output in a file.
 
@@ -67,6 +74,8 @@ you are not allowed to refer to this definition from another one.
 The user should be warned about any code fragment that is not, directly or
 indirectly, referenced from an output definition.
 
+[source,ml]
+----
 @$@<DefinitionType@>==@{@-
 @<Location@>
 @<DefName@>
@@ -75,6 +84,7 @@ type t = {  loc : location ;
              id : id ;
          output : bool }
 @}
+----
 
 Notice that there are always at least one location (the first one, "loc").
 
@@ -86,6 +96,8 @@ using such printer more convenient than stock OCaml.
 
 So here they are:
 
+[source,ml]
+----
 @$@<Definitions@>+=@{@-
 let location_print fmt loc =
     Printf.fprintf fmt "%s:%d.%d-%d"
@@ -98,10 +110,13 @@ let print fmt t =
         t.loc.file t.id
         location_print t.loc
 @}
+----
 
 Now obviously we also want to fetch a definition body from its file (checking
 mtime):
 
+[source,ml]
+----
 @$@<Definitions@>+=@{@-
 exception FileChanged of string
 let body t =
@@ -115,6 +130,7 @@ let body t =
     List.map fetch_loc locs |>
     String.concat ""
 @}
+----
 
 Then, we will need a way to add definitions to a global registry, and the
 associated lookup function. Definitions are created from a file, offset and
@@ -122,6 +138,8 @@ length (line number and column number are not given and will be computed when
 registering, so that plugins author work is limited to the minimum) and of
 course the identifier for the definition.
 
+[source,ml]
+----
 @$@<Definitions@>+=@{@-
 
 let registry = Hashtbl.create 31
@@ -136,12 +154,15 @@ let add id output fname off sz =
 let lookup id =
     Hashtbl.find registry id
 @}
+----
 
 Where location_in_file is responsible to return q correct location
 (up to proper line and column numbers) from the file name, offset
 and size (so that the plugin writers don't have to worry about co;puting
 these file locations) :
 
+[source,ml]
+----
 @$@<LocationInFile@>==@{@-
 let location_in_file file offset size =
     let mtime = Unix.((stat file).st_mtime) in
@@ -150,12 +171,15 @@ let location_in_file file offset size =
     and lineno = lineno_at offset txt in
     { file ; offset ; size ; mtime ; lineno ; colno }
 @}
+----
 
 Now the last part: expansion. Given a function Config.find_references (supplied
 by the configuration) that's able to spot all expansion points from a non
 expanded body, and the registry of all known definitions, let's build a
 function that will return the complete expanded body (or signal a problem).
 
+[source,ml]
+----
 @$@<Definitions@>+=@{@-
 let rec expanded_body t =
     let unexpanded = body t in
@@ -192,11 +216,14 @@ let rec expanded_body t =
     (* Add line number information. *)
     !Config.linenum t.loc.lineno t.loc.file ^ txt
 @}
+----
 
 Where each substituted definition is properly indented according to its
 insertion point. We must now complete this module with the functions
 we used up to here for helping dealing with text files and locations:
 
+[source,ml]
+----
 @$@<TxtHelpers@>==@{@-
 let indent =
     let open Str in
@@ -231,28 +258,34 @@ let read_file fname offset size =
     assert (act_sz = size) ;
     str
 @}
-
+----
 
 Regarding linenum, this function depends on the programming language
 used. The default implementation from Config will not output linenum
 directoves. But dedicated backends are easy to write. First, for
 ocaml:
 
+[source,ml]
+----
 @O@<ocaml.ml@>==@{@-
 let linenum lineno fname =
     Printf.sprintf "# %d \"%s\"\n" lineno fname
 
 let () = Config.linenum := linenum
 @}
+----
 
 and for C:
 
+[source,ml]
+----
 @O@<c.ml@>==@{@-
 let linenum lineno fname =
     Printf.sprintf "#line %d \"%s\"\n" lineno fname
 
 let () = Config.linenum := linenum
 @}
+----
 
 One word about the linenum directive in OCaml. It is documented in the chapter
 6.1 (lexical conventions) of the OCaml manual, and from this documentation
@@ -265,6 +298,8 @@ each definition body and after each expansion to return to previous location.
 With these functions we are now ready to start the real job of parsing input
 files(s) and writing output definitions.
 
+[source,ml]
+----
 @O@<definition.ml@>==@{@-
 open Batteries
 
@@ -273,3 +308,4 @@ open Batteries
 @<LocationInFile@>
 @<Definitions@>
 @}
+----

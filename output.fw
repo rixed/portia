@@ -1,10 +1,13 @@
-Output
-======
+// vim:filetype=asciidoc expandtab spell spelllang=en
+
+== Output
 
 Once all definitions have been "registered", we can iterate over
 all which must be output to a file, retrieve its expanded body
 then write it into the file:
 
+[source,ml]
+----
 @$@<Output@>==@{@-
 open Definition
 
@@ -21,15 +24,18 @@ let definition filename def =
 let all () =
     Hashtbl.iter definition registry
 @}
+----
 
 And that's all we need in out Output module:
 
+[source,ml]
+----
 @O@<output.ml@>==@{@-
 open Batteries
 
 @<Output@>
 @}
-
+----
 
 We have glossed over many details to get there: the command line
 interface, the configuration...

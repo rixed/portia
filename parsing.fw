@@ -1,15 +1,16 @@
-Parsing
-=======
+// vim:filetype=asciidoc expandtab spell spelllang=en
+
+== Parsing
 
 Parsing is a very pretentious word, since we merely need to
-spot two things in the input file:
+spot three things in the input file:
 
 - optional include command (with its filename parameter) to instruct us
 how to gather other file name to inspect;
 
 - code definitions;
 
-- reference to other definitions in the body of a definition;
+- in the body of a definition, references to other definitions.
 
 For now we do not want to impose any format to these marks so in all
 generality we are going to read in memory a whole file and ask a configuration
@@ -18,6 +19,8 @@ of definitions that can be found in the file content.
 
 So "parsing" is just:
 
+[source,ml]
+----
 @$@<Parsing@>==@{@-
 let read_whole_file file =
     let ic = Unix.(openfile file [O_RDONLY] 0 |> input_of_descr) in
@@ -31,25 +34,28 @@ let rec parse file =
     !Config.find_inclusions txt |>
     List.iter parse
 @}
+----
 
 That we can group, with some helper functions to be defined later, in a parse
 module:
 
+[source,ml]
+----
 @O@<parse.ml@>==@{@-
 open Batteries
 
 @<Parsing@>
 @<ParsingHelpers@>
 @}
+----
 
-Also, many tools can attach several code fragments to the same name, with the
-expected output being constituted of the concatenation of these fragments.
-To handle this, we will merely register several definitions with the same name,
-and when writing the output of a given definition we will append all bodies in
-order of appearance (ie. sorted by filename and line number).
+Also, we want to be able to attach several code fragments to the same name
+(see R8), with the expected output being constituted of the concatenation of
+these fragments.  To handle this, we will merely register several definitions
+with the same name, and when writing the output of a given definition we will
+append all bodies in order of appearance.
 
-FunnelWeb
-=========
+=== FunnelWeb
 
 Now of course the real difficulty lies in the find_definitions and
 find_inclusions functions, which by default could be the one we need to
@@ -59,10 +65,15 @@ So let's implement at first the simpler of both. For inclusion, funnelweb uses
 a very straightforward syntax: a line consisting only of "@@i somefilename".
 This simple regular expressions will easily collect all such commands for us:
 
+[source,ml]
+----
 @$@<RegexForInclusion@>==@{"^@@i +\\(.+\\) *$"@}
+----
 
 Which leads to this find_inclusions function:
 
+[source,ml]
+----
 @$@<FW_FindInclusions@>==@{@-
 let find_inclusions =
     let re = Str.regexp @<RegexForInclusion@> in
@@ -70,10 +81,13 @@ let find_inclusions =
         | [Some (f, _, _)] -> f::p
         | _ -> assert false) [] re
 @}
+----
 
-With the almighty @{fold_all_groups@}, folding over all groups matched in a
+With the almighty fold_all_groups, folding over all groups matched in a
 given string:
 
+[source,ml]
+----
 @$@<ParsingHelpers@>==@{@-
 let fold_all_groups f p re str =
     let open Str in
@@ -92,6 +106,7 @@ let fold_all_groups f p re str =
             p in
     aux p 0 |> List.rev
 @}
+----
 
 Regarding code definitions, the regular expression is more complex but can
 still handle the job. We have to take greater care here since code blocks
@@ -101,9 +116,12 @@ hopefully this marker is both improbable and short.
 
 We end up with this regular expression:
 
+[source,ml]
+----
 @$@<RegexForDefinition@>==@{@-
 "^@@\\(\\$\\|O\\)@@<\\([^@@]+\\)@@>\\(==\\|\\+=\\)@@{\
 \\(@@-\n\\)?\\(\\([^@@]\\|@@[^}]\\)*\\)@@}"@}
+----
 
 Here we met another difficulty: we must be able to write strings and regular
 expressions that describes funnelweb special commands without triggering
@@ -114,6 +132,8 @@ the middle of problematic token sequences.
 
 With the corresponding find_definitions:
 
+[source,ml]
+----
 @$@<FW_FindDefinitions@>==@{@-
 let find_definitions =
     let re = Str.regexp @<RegexForDefinition@> in
@@ -126,18 +146,24 @@ let find_definitions =
             (id, c = "O", start, stop) :: p
         | _ -> assert false) [] re
 @}
+----
 
 Now to finish with our regular expressions, we must be able to spot references
 to other definitions from within definition bodies. Funnelweb uses a
 straightforward syntax for that, again relying on the unlikelihood of the
 (quite short) sequence of '@@' followed by '<' ot '>':
 
+[source,ml]
+----
 @$@<RegexForReference@>==@{@-
 "\\(@@<\\([^@@]+\\)@@>\\)"@}
+----
 
 With the corresponding find_references (identical to find_inclusions but with
 another regular expression):
 
+[source,ml]
+----
 @$@<FW_FindReferences@>==@{@-
 let find_references =
     let re = Str.regexp @<RegexForReference@> in
@@ -145,6 +171,7 @@ let find_references =
         | [Some (_, start, stop); Some (id, _, _)] -> (id, start, stop)::p
         | _ -> assert false) [] re
 @}
+----
 
 This function will be used later when untangling code fragments into output
 files.
@@ -155,10 +182,13 @@ source code. Thus, before outputing the code we must run a final scan to
 unquote all these characters, especially since we have made a heavy use of this
 quoting mechanism in this document:
 
+[source,ml]
+----
 @$@<FW_Postprocess@>==@{@-
 let postprocess str =
     String.nreplace ~str ~sub:"@@@@" ~by:"@@"
 @}
+----
 
 Of course, all these regular expressions and substring replacement do not add
 up to a proper parser for funnelweb syntax, which is much richer than that.
@@ -166,6 +196,8 @@ It's enough, though, to bootstrap Portia source code, so we will leave this
 funnelweb module here and return to the more interesting topic of generating
 output files.
 
+[source,ml]
+----
 @O@<funnelweb.ml@>==@{@-
 open Batteries
 open Parse
@@ -181,3 +213,4 @@ let () =
     Config.find_inclusions  := find_inclusions ;
     Config.postprocess      := postprocess
 @}
+----

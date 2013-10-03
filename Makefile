@@ -2,7 +2,6 @@
 OCAMLC     = ocamlfind ocamlc
 OCAMLOPT   = ocamlfind ocamlopt
 OCAMLDEP   = ocamlfind ocamldep
-TEX        = tex
 QTEST      = qtest
 top_srcdir = .
 override OCAMLOPTFLAGS += $(INCS) -w Ael -g -annot -I $(top_srcdir)
@@ -10,7 +9,7 @@ override OCAMLFLAGS    += $(INCS) -w Ael -g -annot -I $(top_srcdir)
 REQUIRES = batteries dynlink
 
 .PHONY: clean install uninstall reinstall doc loc
-.SUFFIXES: .ml .mli .cmo .cmi .cmx .cmxs .tex .dvi .pdf .fw
+.SUFFIXES: .ml .mli .cmo .cmi .cmx .cmxs .fw
 
 FW_SOURCES = $(wildcard *.fw)
 PROG_SOURCES = config.ml definition.ml parse.ml output.ml main.ml
@@ -19,10 +18,13 @@ GEN_SOURCES = $(PROG_SOURCES) $(BACKEND_SOURCES)
 
 all: $(BACKEND_SOURCES:.ml=.cmo)
 
+doc: portia.html
+
+portia.html: $(FW_SOURCES)
+	asciidoc -o $@ intro.fw
+
 # dynamically loaded modules must be rebuild after portia.byte has changed
 $(BACKEND_SOURCES:.ml=.cmo): portia.byte
-
-doc: portia.pdf portia.html
 
 fwdepend: $(FW_SOURCES)
 	@for f in $(FW_SOURCES) ; do \
@@ -65,14 +67,8 @@ portia.opt:  $(PROG_SOURCES:.ml=.cmx)
 .ml.cmxs:
 	$(OCAMLOPT) $(SYNTAX) -package "$(REQUIRES)" $(OCAMLOPTFLAGS) -o $@ -shared $<
 
-.tex.dvi:
-	$(TEX) $<
-
-.dvi.pdf:
-	dvipdf $< $@
-
 clean:
-	@$(RM) -f *.[aso] *.cmi *.annot *.lis *.tex *.pdf *.dvi *.log *.html $(GEN_SOURCES) $(PROG_SOURCES:.ml=.cmo) all_tests.ml depend fwdepend
+	@$(RM) -f *.[aso] *.cmi *.annot *.lis *.html $(GEN_SOURCES) $(PROG_SOURCES:.ml=.cmo) all_tests.ml depend fwdepend
 
 distclean: clean
 	@$(RM) $(BACKEND_SOURCES:.ml=.cmo) portia.byte

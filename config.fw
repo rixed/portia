@@ -1,9 +1,10 @@
-Configuration
-=============
+// vim:filetype=asciidoc expandtab spell spelllang=en
+
+== Configuration
 
 We have seen so far only 3 parameters taken from the configuration,
 all three being references to functions taking a file content as
-a string and returning substrings of interrest:
+a string and returning substrings of interest:
 
 - find_definitions, that spots new definitions
 
@@ -18,6 +19,8 @@ a string and returning substrings of interrest:
 
 So that our Config module thus far is merely:
 
+[source,ml]
+----
 @O@<config.ml@>==@{@-
 let find_definitions =
     ref ((fun _txt -> []) : string -> (string * bool * int * int) list)
@@ -30,6 +33,15 @@ let postprocess =
 let linenum =
     ref ((fun _n _f -> "") : int -> string -> string)
 @}
+----
 
 Notice that separate compilation of this module imposes that we have to
 declare the types of these references.
+
+Remember form the Main module that we will load by default the funnelweb
+backend, so when running portia without option it will behave (loosely) like
+funnelweb.  No backends for linenum will be loaded, though, so no linenum
+directives will be output. It would be nice if by default the linenum
+function was relying on output file name to choose from a set of predefined
+implementations, though.
+

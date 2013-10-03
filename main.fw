@@ -1,3 +1,18 @@
+// vim:filetype=asciidoc expandtab spell spelllang=en
+
+== Overview
+
+For generating source code, we need a very few directives:
+
+- define and name a block of code (see R5)
+- reference a block of code by name (from another block of code or from the
+  literate text)
+- define and output to a file a block of code
+- add a file to the list of processed files (see R9)
+
+We are going to use the http://ocaml.org[OCaml language] because it's
+compendious yet fast.
+
 The program basically reads its configuration file (or load its compiled
 configuration file), then proceed with reading the given file, building a
 dictionary of block definitions and loading additional files along the way,
@@ -10,38 +25,46 @@ resulting source code (for I firmly believe literate programming suits bigger
 programs as well).
 
 So the basic skeleton, given a configuration file backend and a list
-of source files to proceed @{srcfile@}, looks like:
+of source files to proceed srcfile, looks like:
 
+[source,ml]
+----
 @$@<Skeleton@>==@{
 List.iter (load_lib !libdir) !backends ;
 List.iter Parse.parse !srcfiles ;
 Output.all ()
 @}
+----
 
 Notice that configuration does not appear here, nor does harvested definitions.
 They lies in global variables, which suits this short lived program just fine.
 We won't worry about configuration parameters yet. Suffice to say that all of
 these global parameters, regular expressions and functions (remember some
 filters may be functions) are references defined in a module unambiguously
-named @{Config@}.
+named Config.
 
 By loading a conf, we merely want to load a compiled .cmo file:
 
+[source,ml]
+----
 @$@<ConfigLoad@>==@{@-
 let load_lib libdir fname =
     let libname = libdir ^"/"^ fname ^".cmo" in
     (*Printf.printf "loading lib %s\n" libname ;*)
     Dynlink.(loadfile (adapt_filename libname))
 @}
+----
 
 This is enough for a user to choose between several backends (funnelweb, ...).
 
 So we only need this entry point to parse co;;and line arguments and we are
 done with the boring work:
 
+[source,ml]
+----
 @$@<EntryPoint@>==@{@-
 let main =
-    let backends = ref ["funnelweb"] in
+    let backends = ref [] in
     let libdir = ref "." in
     let srcfiles = ref [] in
     let addlst l s = l := s :: !l in
@@ -56,17 +79,21 @@ let main =
          \n\
          portia [options] files...\n\
          Will output source code from given files.\n") ;
+    if !backends = [] then addlst backends "funnelweb" ; (* default syntax *)
     @<Skeleton@>
 @}
+----
 
 So we have the Main module (linked last):
 
+----
 @O@<main.ml@>==@{@-
 open Batteries
 
 @<ConfigLoad@>
 @<EntryPoint@>
 @}
+----
 
 Let's focus now on our main data type, the code block definition.
 

@@ -1,24 +1,36 @@
-Portia: a text processor for literate programs
-==============================================
+// vim:filetype=asciidoc expandtab spell spelllang=en
 
-We want a simple tool to build literate programs, with those
-requirements:
+= Portia: a text processor for literate programs
+:toc:
+:icons:
+:numbered:
+:website: http://github.com/rixed/portia
 
-R1. must be able to build itself
-R2. must be bootstrapable with funnelweb
-R3. add correct file and line number infos into generated source code
-R4. do not output doc; rather, make code extraction flexible enough for the doc
-    to be written in any documentation language in the first place
-R5. code blocks may be inline
-R6. must not require to have all the text, nor all the code, present in memory
-R7. to make references to locally defined code blocks smaller, an optional
-    namespace may be appended to force a reference lookup to consider only the
-    code blocks defined in the designated file (which name is given relative to
-    root file)
+== What's literate programming?
 
-It follows from R1 and R2 that we should either follow funnelweb syntax,
-which is awful, or build a tool that's flexible enough to act like funnelweb
-(or at least, that can understand a workable subset of funnelweb syntax).
+http://en.wikipedia.org/wiki/Literate_programming[better ask Wikipedia]
+
+== Why another preprocessor?
+
+Because no literate programming preprocessor allows any document language
+and any programming language. I, for one, like to embed fragments of OCaml in
+asciidoc files.
+
+Here are the requirements and short rationals:
+
+R1. Must be able to build itself
+
+That's the fun part.
+
+R2. Must be bootstrapable with funnelweb
+
+Because funnelweb is quite usable. Especially, it is agnostic with regard to
+the programming language and almost so regarding the documentation language.
+
+It follows from these requirements that we should either follow funnelweb
+syntax, which is ugly, or build a tool that's flexible enough to act like
+funnelweb (or at least, that can understand a workable subset of funnelweb
+syntax).
 
 Ideally, all escaping sequences of the macro system can be redefined.
 When bootstrapping (with the actual funnelweb) we do not mind the quality of
@@ -26,35 +38,67 @@ the generated documentation since we can produce a better documentation (and
 source code, thanks to requirement R3 & R4) from recompiling with the
 bootstrapped processor.
 
-For generating source code, we need a very few commands:
+R3. Add correct file and line number informations into generated source code
 
-- define and name a block of code (see R5)
-- reference a block of code by name (from another block of code or from the
-  literate text)
-- define and output to a file a block of code
+Whatever the programming language that's used of course.
 
-R8. can split content into several files
+R4. Do not output doc; rather, make code extraction flexible enough for the doc
+    to be written in any documentation language in the first place
+
+The documentation being the important part, do not interfere with it.
+
+R5. Code blocks may be inline
+
+Like short mathematical formulas are better inline.
+
+R6. Must not require to have all the text, nor all the code, present in memory
+
+Funnelweb builds a whole source code representation in memory before outputing
+anything. This is frightening. Despite I've never used literate style for
+anything but trivial program I believe the technique suits huge programs just
+as well.
+
+R7. Can split content into several files
+
+Quite obvious.
+
+R8. Named code fragments may be defined from several places (even in different
+    files)
+
+In literate programming, the reader must remember the main names used by the
+program as well as the name used to reference important code fragments.  In
+order to limit the number of unessential definitions, Funnelweb allows to build
+a macro definition incrementally so that you must not introduce temporary names
+just to insert commentary in between two related code fragments.
+
+R9. Support an include directive
 
 Since we do not care about the order in which the code fragments will be
 encountered, and we do not care neither in what order we scan the documentation
-(since we do not produce a documentation according to R4, then we can merely be
-given a list of files to scan. We do not need an include directive as funnelweb
-(and other) does.
+(since we do not produce a documentation according to R4), then we can merely be
+given a list of files to scan from the command line. We do not need an include
+directive as funnelweb (and other) does.
 
 Still, many documentation language has an include directive and if we were able
-to follow it then we could alleviate the user for the need to maintain this
+to follow it then we could alleviate the user from the need to maintain this
 list of files (since we could find everything from the root document).
 
 So we do both: we will scan everything from the command line and additionally,
 if we are taught how to spot an include directive, then we will try to follow
 it.
 
+////
+Here we must hide funnelweb include directives:
 
-We are going to use the OCaml language because it's compendious yet fast.
-The filters may be defined in OCaml.
-
-@i definitions.fw
 @i main.fw
+@i definitions.fw
 @i parsing.fw
 @i output.fw
 @i config.fw
+////
+
+include::main.fw[]
+include::definitions.fw[]
+include::parsing.fw[]
+include::output.fw[]
+include::config.fw[]
