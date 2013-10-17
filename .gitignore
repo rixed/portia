@@ -6,3 +6,5 @@ fwdepend
 *.byte
 *.opt
 *.html
+portia
+main.fw

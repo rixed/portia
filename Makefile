@@ -1,4 +1,8 @@
 # vim:filetype=make
+PREFIX    ?= /usr
+BINDIR    ?= $(PREFIX)/bin/
+PLUGINDIR ?= $(PREFIX)/lib/portia
+
 OCAMLC     = ocamlfind ocamlc
 OCAMLOPT   = ocamlfind ocamlopt
 OCAMLDEP   = ocamlfind ocamldep
@@ -9,14 +13,17 @@ override OCAMLFLAGS    += $(INCS) -w Ael -g -annot -I $(top_srcdir)
 REQUIRES = batteries dynlink
 
 .PHONY: clean install uninstall reinstall doc loc
-.SUFFIXES: .ml .mli .cmo .cmi .cmx .cmxs .fw
+.SUFFIXES: .ml .mli .cmo .cmi .cmx .cmxs .fw .fwi
 
-FW_SOURCES = $(wildcard *.fw)
+FW_SOURCES = $(wildcard *.fw) main.fw
 PROG_SOURCES = config.ml definition.ml parse.ml output.ml main.ml
 BACKEND_SOURCES = funnelweb.ml ocaml.ml c.ml
 GEN_SOURCES = $(PROG_SOURCES) $(BACKEND_SOURCES)
 
-all: $(BACKEND_SOURCES:.ml=.cmo)
+all: $(BACKEND_SOURCES:.ml=.cmo) portia
+
+portia: portia.byte
+	ln -f portia.byte portia
 
 doc: portia.html
 
@@ -33,19 +40,19 @@ fwdepend: $(FW_SOURCES)
 include fwdepend
 
 $(GEN_SOURCES): $(FW_SOURCES)
-	@if test -x portia.byte && \
+	@if test -x portia && \
 		test -e funnelweb.cmo && \
 		test -e ocaml.cmo ; then \
-		echo "Using Portia :-)" ;\
-		./portia.byte -syntax ocaml intro.fw ;\
+		echo "Using Portia to build $@ :-)" ;\
+		./portia -libdir . -syntax ocaml -syntax funnelweb intro.fw ;\
 	 else \
-		echo "Using Funnelweb :-(" ;\
+		echo "Using Funnelweb to build $@ :-(" ;\
 		fw intro.fw ;\
 	 fi
 
 # We'd be glad to depend on *.ml but ocamldep is so slow...
 # Use "make -B depend" when you know you changed dependancies.
-depend:
+depend: $(GEN_SOURCES)
 	$(OCAMLDEP) $(SYNTAX) -package "$(REQUIRES)" *.ml > $@
 include depend
 
@@ -54,6 +61,9 @@ portia.byte: $(PROG_SOURCES:.ml=.cmo)
 
 portia.opt:  $(PROG_SOURCES:.ml=.cmx)
 	$(OCAMLOPT) -o $@ $(SYNTAX) -package "$(REQUIRES)" -linkpkg $(OCAMLOPTFLAGS) $^
+
+.fwi.fw:
+	sed -e 's|@PLUGINDIR@|$(PLUGINDIR)|g' $< > $@
 
 .ml.cmo:
 	$(OCAMLC) $(SYNTAX) -package "$(REQUIRES)" $(OCAMLFLAGS) -c $<
@@ -68,13 +78,23 @@ portia.opt:  $(PROG_SOURCES:.ml=.cmx)
 	$(OCAMLOPT) $(SYNTAX) -package "$(REQUIRES)" $(OCAMLOPTFLAGS) -o $@ -shared $<
 
 clean:
-	@$(RM) -f *.[aso] *.cmi *.annot *.lis *.html $(GEN_SOURCES) $(PROG_SOURCES:.ml=.cmo) all_tests.ml depend fwdepend
+	@$(RM) -f *.[aso] *.cmi *.annot *.lis *.html \
+	 $(GEN_SOURCES) $(PROG_SOURCES:.ml=.cmo) \
+	 all_tests.ml depend fwdepend main.fw
 
 distclean: clean
-	@$(RM) $(BACKEND_SOURCES:.ml=.cmo) portia.byte
+	@$(RM) -f $(BACKEND_SOURCES:.ml=.cmo) portia.byte portia.opt portia
 
 loc: $(GEN_SOURCES)
 	@cat $^ | wc -l
+
+install: all
+	install -d $(DESTDIR)$(BINDIR)
+	install portia $(DESTDIR)$(BINDIR)
+	install -d $(DESTDIR)$(PLUGINDIR)
+	for module in $(BACKEND_SOURCES:.ml=.cmo) ; do \
+		install $$module $(DESTDIR)$(PLUGINDIR) ;\
+	done
 
 # Unit tests
 

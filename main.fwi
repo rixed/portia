@@ -65,7 +65,7 @@ done with the boring work:
 @$@<EntryPoint@>==@{@-
 let main =
     let backends = ref [] in
-    let libdir = ref "." in
+    let libdir = ref "@PLUGINDIR@" in
     let srcfiles = ref [] in
     let addlst l s = l := s :: !l in
     Arg.(parse
