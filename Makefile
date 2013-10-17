@@ -96,6 +96,13 @@ install: all
 		install $$module $(DESTDIR)$(PLUGINDIR) ;\
 	done
 
+uninstall:
+	for module in $(BACKEND_SOURCES:.ml=.cmo) ; do \
+		$(RM) -f $(DESTDIR)$(PLUGINDIR)/$$module ;\
+	done
+	rmdir --ignore-fail-on-non-empty $(DESTDIR)$(PLUGINDIR)
+	$(RM) -f $(DESTDIR)$(BINDIR)/portia
+
 # Unit tests
 
 # Tests with qtest
