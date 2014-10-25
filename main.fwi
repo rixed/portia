@@ -2,7 +2,8 @@
 
 == Overview
 
-For generating source code, we need a very few directives:
+For generating source code (remember R4: we do not have to generate the doc),
+we need a few directives:
 
 - define and name a block of code (see R5)
 - reference a block of code by name (from another block of code or from the
@@ -21,16 +22,15 @@ files, and checking everything.
 
 Then it outputs the code, rereading the files to fetch code blocks so that we
 do not have to hold in memory a quantity of information equivalent of the
-resulting source code (for I firmly believe literate programming suits bigger
-programs as well).
+resulting source code.
 
-So the basic skeleton, given a configuration file backend and a list
-of source files to proceed srcfile, looks like:
+So the basic skeleton, given a set of configuration files `plugins` and a list
+of source files to proceed `srcfiles`, looks like:
 
 [source,ml]
 ----
 @$@<Skeleton@>==@{
-List.iter (load_lib !libdir) !backends ;
+List.iter (load_lib !libdir) !plugins ;
 List.iter Parse.parse !srcfiles ;
 Output.all ()
 @}
@@ -41,7 +41,7 @@ They lies in global variables, which suits this short lived program just fine.
 We won't worry about configuration parameters yet. Suffice to say that all of
 these global parameters, regular expressions and functions (remember some
 filters may be functions) are references defined in a module unambiguously
-named Config.
+named `Config`.
 
 By loading a conf, we merely want to load a compiled .cmo file:
 
@@ -50,36 +50,38 @@ By loading a conf, we merely want to load a compiled .cmo file:
 @$@<ConfigLoad@>==@{@-
 let load_lib libdir fname =
     let libname = libdir ^"/"^ fname ^".cmo" in
-    (*Printf.printf "loading lib %s\n" libname ;*)
+    Log.debug "loading lib %s\n" libname ;
     Dynlink.(loadfile (adapt_filename libname))
 @}
 ----
 
-This is enough for a user to choose between several backends (funnelweb, ...).
+This is enough for a user to choose between several plugins (funnelweb, ...).
 
-So we only need this entry point to parse co;;and line arguments and we are
+So we only need this entry point to parse command line arguments and we are
 done with the boring work:
 
 [source,ml]
 ----
 @$@<EntryPoint@>==@{@-
 let main =
-    let backends = ref [] in
+    let plugins = ref [] in
     let libdir = ref "@PLUGINDIR@" in
     let srcfiles = ref [] in
     let addlst l s = l := s :: !l in
     Arg.(parse
-        [ "-syntax", String (addlst backends),
-                     "Name of the backend to use for parsing files \
+        [ "-syntax", String (addlst plugins),
+                     "Name of the plugin to use for parsing files \
                       (default to funnelweb)" ;
           "-libdir", Set_string libdir,
-                     "Where to read backends from" ]
+                     "Where to read plugins from" ;
+          "-debug",  Set Log.verbose,
+                     "Output debug messages" ]
         (addlst srcfiles)
         "portia - literate programming preprocessor\n\
          \n\
          portia [options] files...\n\
          Will output source code from given files.\n") ;
-    if !backends = [] then addlst backends "funnelweb" ; (* default syntax *)
+    if !plugins = [] then addlst plugins "funnelweb" ; (* default syntax *)
     @<Skeleton@>
 @}
 ----

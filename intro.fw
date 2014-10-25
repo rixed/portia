@@ -65,11 +65,11 @@ Quite obvious.
 R8. Named code fragments may be defined from several places (even in different
     files)
 
-In literate programming, the reader must remember the main names used by the
-program as well as the name used to reference important code fragments.  In
-order to limit the number of unessential definitions, Funnelweb allows to build
-a macro definition incrementally so that you must not introduce temporary names
-just to insert commentary in between two related code fragments.
+In literate programming, the human reader must remember the main names used by
+the program as well as the names used to reference important code fragments.
+In order to limit the number of unessential definitions, Funnelweb allows to
+build a macro definition incrementally so that you must not introduce temporary
+names just to insert commentary in between two related code fragments.
 
 R9. Support an include directive
 
@@ -95,6 +95,7 @@ Here we must hide funnelweb include directives:
 @i parsing.fw
 @i output.fw
 @i config.fw
+@i misc.fw
 ////
 
 include::main.fw[]
@@ -102,3 +103,4 @@ include::definitions.fw[]
 include::parsing.fw[]
 include::output.fw[]
 include::config.fw[]
+include::misc.fw[]

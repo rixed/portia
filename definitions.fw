@@ -4,21 +4,24 @@
 
 It is well known that naming things is the most difficult part in programming.
 This has to do with the fact that a large part of programming consists in
-inventing many simples but abstracts concept with no counterpart in actual life
-nor any abstractions from other intellectual fields.  Sometime we can borrow a
-term or two from mathematics but mostly we have to give names to things that
-are relevant only in our program, maybe not even for its full lifetime.
+inventing many simple but abstract concepts with no counterpart in actual life
+or pre-existing abstractions from other intellectual fields.  Sometime we can
+borrow a term or two from mathematics but mostly we have to give names to
+things that are relevant only to our program, maybe not even for its full
+lifetime.
 
-So we have to constantly look for words close enough to what we actually mean
-that, with enough context it will be clear what we mean by them. Hopefully most
-words designate many different things so the reader is already well accustomed
-to figuring out a meaning from vague words and a context.
+So we have to repeatedly look for designations close enough to what we actually
+mean that, with enough context, it will become clear what concept they refer
+to.  Of course, this context is not easy to acquire without prior knowledge of
+these somewhat arbitrary definitions, so it takes some time and effort to pull
+oneself out of this catch-22 situation.
 
-So, now that this short introduction have hopefully lead my reader into
+So, after this short introduction have hopefully drive my reader to
 leniency, let's ask ourself what the name of a program fragment should be.
-Should it be an "extract", considered this fragment is separated from the rest
-for display purpose?  Or a "phrase", considered it's part of a larger
-"discourse" (the program)?
+Shall we keep calling it a "program fragment"? But this implies that this is
+part of a program, which is not required. Should it be an "extract", considered
+this fragment is separated from the rest for display purpose?  Or a "phrase",
+considered it's part of a larger "discourse" (the program)?
 
 Or, if we forget what we manipulate to consider how we manipulate it,
 should it be called a "macro body"? Merely a "macro" or "body"? Or a
@@ -32,11 +35,13 @@ giving generic names help building generic programs).
 Let's call these code fragments "definitions", then.
 
 What information is there in a definition?
-In no specific order, we have seen so far we need:
+In no specific order, we have already seen that we need:
 
-- its location used both for error reporting (file name, line number and
+* its location used both for error reporting (file name, line number and
   column) and for fetching it quickly on demand (offset and size in
-  bytes):
+  bytes). Also note the recording of the mtime so that we can tell, when
+  fetching the body, that the file have not changed since we collected this
+  definition.
 
 [source,ml]
 ----
@@ -48,28 +53,30 @@ type location = { file : string ;
                 offset : int ;
                   size : int }@}
 ----
-  with the GNU convention that: "Line numbers should start from 1 at the
-  beginning of the file, and column numbers should start from 1 at the
-  beginning of the line.".
-  Rather than having a single location, we want to allow for a definition
-  to be split across many locations (the body of the definition is than the
-  concatenation of all fragment in order of appearance).
-  Note that the mtime is there so that we can tell, when fetching
-  the body, that the file have not changed since we collected
-  this definition.
 
-- an identifier (unique for the file its located in) which can be any string:
+with the GNU convention that:
+
+  Line numbers should start from 1 at the beginning of the file, and column
+  numbers should start from 1 at the beginning of the line.
+
+Rather than having a single location, we want to allow for a definition to be
+split across many locations (the body of the definition is then the
+concatenation of all fragment in order of appearance - which is specified by
+the depth first exploration of included files, the ordering of files in command
+line and finally the order we met definitions in a given file)
+
+* an identifier (unique for the file its located in) which can be any string:
 
 [source,ml]
 ----
 @$@<DefName@>==@{type id = string@}
 ----
 
-- a flag to tell us if this definition is supposed to be output in a file.
-
-The output flag have several consequences: of course, the expanded body of this
-definition will be written into a file (which name will be the identifier); and
-you are not allowed to refer to this definition from another one.
+* a flag to tell us if this definition is supposed to be output in a file,
+  with two consequences:
+** of course, the expanded body of this definition will be written into a
+   file (which name will be the identifier);
+** and you are not allowed to refer to this definition from another one.
 
 The user should be warned about any code fragment that is not, directly or
 indirectly, referenced from an output definition.
@@ -86,9 +93,9 @@ type t = {  loc : location ;
 @}
 ----
 
-Notice that there are always at least one location (the first one, "loc").
+Notice that there are always at least one location (the first one, `loc`).
 
-It's always a good idea to write proper filters for any new type. This may
+It's always a good idea to write proper printers for any new type. This may
 looks fastidious but you are actually doing yourself a favor: better have these
 printers ready before they are needed than to have to write them quickly while
 struggling with a bug. Especially when using Batteries which make writing and
@@ -145,6 +152,7 @@ course the identifier for the definition.
 let registry = Hashtbl.create 31
 
 let add id output fname off sz =
+    Log.debug "Add definition for %s\n" id ;
     let loc = location_in_file fname off sz in
     Hashtbl.modify_opt id (function
         | None   -> Some { loc ; id ; output ; locs = [] }
@@ -156,10 +164,9 @@ let lookup id =
 @}
 ----
 
-Where location_in_file is responsible to return q correct location
+Where location_in_file is responsible to return a correct location
 (up to proper line and column numbers) from the file name, offset
-and size (so that the plugin writers don't have to worry about co;puting
-these file locations) :
+and size:
 
 [source,ml]
 ----
@@ -183,12 +190,12 @@ function that will return the complete expanded body (or signal a problem).
 @$@<Definitions@>+=@{@-
 let rec expanded_body t =
     let unexpanded = body t in
-    (*Printf.printf "expand '%s'\n" unexpanded ;*)
+    Log.debug "expand '%s'\n" unexpanded ;
     (* find_references returns a list of (id, start_offset, stop_offset) *)
     let refs = !Config.find_references unexpanded in
     (* TODO: sort this list according to start_offset *)
-    (*Printf.printf "found references: %a\n"
-        (List.print (Tuple3.print String.print Int.print Int.print)) refs ;*)
+    Log.debug "found references: %a\n"
+        (List.print (Tuple3.print String.print Int.print Int.print)) refs ;
     let txt, last_stop =
         List.fold_left (fun (txt,last_stop) (id,start,stop) ->
             let t' = lookup id in (* TODO: handle Not_found *)
@@ -262,7 +269,7 @@ let read_file fname offset size =
 
 Regarding linenum, this function depends on the programming language
 used. The default implementation from Config will not output linenum
-directoves. But dedicated backends are easy to write. First, for
+directives. But dedicated plugins are easy to write. First, for
 ocaml:
 
 [source,ml]

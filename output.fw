@@ -2,9 +2,8 @@
 
 == Output
 
-Once all definitions have been "registered", we can iterate over
-all which must be output to a file, retrieve its expanded body
-then write it into the file:
+Once all definitions have been registered we can iterate over all which must be
+output into a file, retrieve its expanded body then write it into the file:
 
 [source,ml]
 ----
@@ -14,10 +13,12 @@ open Definition
 (* output a given definition *)
 let definition filename def =
     if def.output then (
-        Printf.printf "Generating %s...\n%!" filename ;
+        Log.debug "Generating %s...\n%!" filename ;
         let text = expanded_body def |>
                    !Config.postprocess in
         output_file ~filename ~text
+    ) else (
+        Log.debug "No output file for %s\n%!" filename
     )
 
 (* output all registered definitions *)
@@ -26,7 +27,7 @@ let all () =
 @}
 ----
 
-And that's all we need in out Output module:
+And that's all we need in our Output module:
 
 [source,ml]
 ----
@@ -36,7 +37,4 @@ open Batteries
 @<Output@>
 @}
 ----
-
-We have glossed over many details to get there: the command line
-interface, the configuration...
 

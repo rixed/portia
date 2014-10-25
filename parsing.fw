@@ -2,11 +2,11 @@
 
 == Parsing
 
-Parsing is a very pretentious word, since we merely need to
-spot three things in the input file:
+Parsing is a pretentious appellation, since we merely need to spot three things
+in the input files:
 
 - optional include command (with its filename parameter) to instruct us
-how to gather other file name to inspect;
+how to gather other file names to inspect;
 
 - code definitions;
 
@@ -27,6 +27,7 @@ let read_whole_file file =
     IO.read_all ic (* autoclosed *)
 
 let rec parse file =
+    Log.debug "Parsing file %s\n" file ;
     let txt = read_whole_file file in
     !Config.find_definitions txt |>
     List.iter (fun (id, output, start, stop) ->
@@ -50,19 +51,25 @@ open Batteries
 ----
 
 Also, we want to be able to attach several code fragments to the same name
-(see R8), with the expected output being constituted of the concatenation of
+(see R8), with the actual expansion being composed of the concatenation of
 these fragments.  To handle this, we will merely register several definitions
 with the same name, and when writing the output of a given definition we will
 append all bodies in order of appearance.
 
 === FunnelWeb
 
-Now of course the real difficulty lies in the find_definitions and
-find_inclusions functions, which by default could be the one we need to
+// Warning: funnelweb will report as an error any arobas sign that it does not
+// understand. It will, though, replace @@ by a single arobas in outputted code
+// and doc. We do not use funnelweb to output the doc, so have to perform this
+// later transformation using sed in the Makefile. So, each time you see "@@"
+// in the following text, what we really mean is a single arobas.
+
+Now of course the real difficulty lies in the `find_definitions` and
+`find_inclusions` functions, which by default could be the one we need to
 bootstrap (ie. funnelweb compatible).
 
 So let's implement at first the simpler of both. For inclusion, funnelweb uses
-a very straightforward syntax: a line consisting only of "@@i somefilename".
+a very straightforward syntax: a line consisting only of `@@i somefilename`.
 This simple regular expressions will easily collect all such commands for us:
 
 [source,ml]
@@ -70,7 +77,7 @@ This simple regular expressions will easily collect all such commands for us:
 @$@<RegexForInclusion@>==@{"^@@i +\\(.+\\) *$"@}
 ----
 
-Which leads to this find_inclusions function:
+Which leads to this `find_inclusions` function:
 
 [source,ml]
 ----
@@ -83,8 +90,8 @@ let find_inclusions =
 @}
 ----
 
-With the almighty fold_all_groups, folding over all groups matched in a
-given string:
+With the almighty `fold_all_groups`, folding over all groups matched in a given
+string:
 
 [source,ml]
 ----
@@ -130,7 +137,7 @@ In other words we must write a regular expression that does not match itself.
 The easy trick is to split the regular expression into several lines right in
 the middle of problematic token sequences.
 
-With the corresponding find_definitions:
+With the corresponding `find_definitions`:
 
 [source,ml]
 ----
@@ -138,9 +145,9 @@ With the corresponding find_definitions:
 let find_definitions =
     let re = Str.regexp @<RegexForDefinition@> in
     fold_all_groups (fun l p ->
-        (*Printf.printf "found def: %a\n"
+        Log.debug "found def: %a\n"
             (List.print (Option.print
-                (Tuple3.print String.print Int.print Int.print))) l ;*)
+                (Tuple3.print String.print Int.print Int.print))) l ;
         match l with
         | [Some (c, _, _); Some (id, _, _); _; _; Some (_, start, stop); _] ->
             (id, c = "O", start, stop) :: p
@@ -151,7 +158,7 @@ let find_definitions =
 Now to finish with our regular expressions, we must be able to spot references
 to other definitions from within definition bodies. Funnelweb uses a
 straightforward syntax for that, again relying on the unlikelihood of the
-(quite short) sequence of '@@' followed by '<' ot '>':
+(short) sequence of '@@' followed by '<' or '>':
 
 [source,ml]
 ----
@@ -159,8 +166,8 @@ straightforward syntax for that, again relying on the unlikelihood of the
 "\\(@@<\\([^@@]+\\)@@>\\)"@}
 ----
 
-With the corresponding find_references (identical to find_inclusions but with
-another regular expression):
+With the corresponding `find_references` (identical to `find_inclusions` but
+with another regular expression):
 
 [source,ml]
 ----
@@ -176,11 +183,11 @@ let find_references =
 This function will be used later when untangling code fragments into output
 files.
 
-Last and least, funnelweb (and probably other systems as well) uses an escape
-character that can be used to include its control character ('@@') in the
-source code. Thus, before outputing the code we must run a final scan to
-unquote all these characters, especially since we have made a heavy use of this
-quoting mechanism in this document:
+Last and least, funnelweb (and probably other literate programming
+preprocessors as well) uses an escape character that can be used to include its
+control character ('@@') in the source code. Thus, before outputting the code
+we must run a final scan to unquote all these characters, especially since we
+have made a heavy use of this quoting mechanism in this document:
 
 [source,ml]
 ----

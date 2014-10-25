@@ -2,20 +2,22 @@
 
 == Configuration
 
-We have seen so far only 3 parameters taken from the configuration,
-all three being references to functions taking a file content as
-a string and returning substrings of interest:
+We have seen so far only five parameters taken from the configuration, the
+first three being references to functions taking a file content as a string and
+returning substrings of interest:
 
-- find_definitions, that spots new definitions
+- `find_definitions`, that spots new definitions
 
-- find_references, that spots references to definitions in definition bodies
+- `find_references`, that spots references to definitions in definition bodies
 
-- find_inclusions, that spots declarations of other files to parse
+- `find_inclusions`, that spots declarations of other files to parse
 
-- postprocess, that perform whatever modification is required on the expanded
+and the others being simpler function to post-process or beautify the output:
+
+- `postprocess`, that perform whatever modification is required on the expanded
   code
 
-- linenum, a function to output line number indication for the compiler
+- `linenum`, a function to output line number indications for the compiler
 
 So that our Config module thus far is merely:
 
@@ -39,9 +41,9 @@ Notice that separate compilation of this module imposes that we have to
 declare the types of these references.
 
 Remember form the Main module that we will load by default the funnelweb
-backend, so when running portia without option it will behave (loosely) like
-funnelweb.  No backends for linenum will be loaded, though, so no linenum
-directives will be output. It would be nice if by default the linenum
-function was relying on output file name to choose from a set of predefined
-implementations, though.
+plugin, so when running portia without option it will behave (loosely) like
+funnelweb.  This plugins will not implement `linenum`, though, so no line
+number directives will be outputted. It would be nice if by default the
+`linenum` function was relying on output file name to choose from a set of
+predefined implementations, though.
 

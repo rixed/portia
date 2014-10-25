@@ -8,3 +8,5 @@ fwdepend
 *.html
 portia
 main.fw
+*.cmi
+*.cmo

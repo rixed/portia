@@ -8,15 +8,15 @@ OCAMLOPT   = ocamlfind ocamlopt
 OCAMLDEP   = ocamlfind ocamldep
 QTEST      = qtest
 top_srcdir = .
-override OCAMLOPTFLAGS += $(INCS) -w Ael -g -annot -I $(top_srcdir)
-override OCAMLFLAGS    += $(INCS) -w Ael -g -annot -I $(top_srcdir)
+override OCAMLOPTFLAGS += $(INCS) -w Ael-31-33-40-41-42-44-45 -g -annot -I $(top_srcdir)
+override OCAMLFLAGS    += $(INCS) -w Ael-31-33-40-41-42-44-45 -g -annot -I $(top_srcdir)
 REQUIRES = batteries dynlink
 
 .PHONY: clean install uninstall reinstall doc loc
 .SUFFIXES: .ml .mli .cmo .cmi .cmx .cmxs .fw .fwi
 
 FW_SOURCES = $(wildcard *.fw) main.fw
-PROG_SOURCES = config.ml definition.ml parse.ml output.ml main.ml
+PROG_SOURCES = log.ml config.ml definition.ml parse.ml output.ml main.ml
 BACKEND_SOURCES = funnelweb.ml ocaml.ml c.ml
 GEN_SOURCES = $(PROG_SOURCES) $(BACKEND_SOURCES)
 
@@ -29,6 +29,7 @@ doc: portia.html
 
 portia.html: $(FW_SOURCES)
 	asciidoc -o $@ intro.fw
+	sed -i -e 's/@@/@/g' $@
 
 # dynamically loaded modules must be rebuild after portia.byte has changed
 $(BACKEND_SOURCES:.ml=.cmo): portia.byte
