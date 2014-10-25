@@ -90,19 +90,11 @@ loc: $(GEN_SOURCES)
 	@cat $^ | wc -l
 
 install: all
-	install -d $(DESTDIR)$(BINDIR)
-	install portia $(DESTDIR)$(BINDIR)
-	install -d $(DESTDIR)$(PLUGINDIR)
-	for module in $(BACKEND_SOURCES:.ml=.cmo) ; do \
-		install $$module $(DESTDIR)$(PLUGINDIR) ;\
-	done
+	ocamlfind install portia META portia $(BACKEND_SOURCES:.ml=.cmo)
 
 uninstall:
-	for module in $(BACKEND_SOURCES:.ml=.cmo) ; do \
-		$(RM) -f $(DESTDIR)$(PLUGINDIR)/$$module ;\
-	done
-	rmdir --ignore-fail-on-non-empty $(DESTDIR)$(PLUGINDIR)
-	$(RM) -f $(DESTDIR)$(BINDIR)/portia
+	ocamlfind remove portia
+reinstall: uninstall install
 
 # Unit tests
 
