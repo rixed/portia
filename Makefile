@@ -16,11 +16,12 @@ REQUIRES = batteries dynlink
 .SUFFIXES: .ml .mli .cmo .cmi .cmx .cmxs .fw .fwi
 
 FW_SOURCES = $(wildcard *.fw) main.fw
-PROG_SOURCES = log.ml config.ml definition.ml parse.ml output.ml main.ml
+LIB_SOURCES = log.ml config.ml definition.ml parse.ml
+PROG_SOURCES = $(LIB_SOURCES) output.ml main.ml
 BACKEND_SOURCES = funnelweb.ml ocaml.ml c.ml
 GEN_SOURCES = $(PROG_SOURCES) $(BACKEND_SOURCES)
 
-all: $(BACKEND_SOURCES:.ml=.cmo) portia
+all: $(BACKEND_SOURCES:.ml=.cmo) portia portia.cma $(LIB_SOURCES:.ml=.cmi)
 
 portia: portia.byte
 	ln -f portia.byte portia
@@ -78,6 +79,9 @@ portia.opt:  $(PROG_SOURCES:.ml=.cmx)
 .ml.cmxs:
 	$(OCAMLOPT) $(SYNTAX) -package "$(REQUIRES)" $(OCAMLOPTFLAGS) -o $@ -shared $<
 
+portia.cma: $(LIB_SOURCES:.ml=.cmo) $(LIB_SOURCES:.ml=.cmi)
+	$(OCAMLC) $(SYNTAX) -package "$(REQUIRES)" -a -o $@ -custom -linkpkg $(OCAMLFLAGS) $(LIB_SOURCES:.ml=.cmo)
+
 clean:
 	@$(RM) -f *.[aso] *.cmi *.annot *.lis *.html \
 	 $(GEN_SOURCES) $(PROG_SOURCES:.ml=.cmo) \
@@ -90,7 +94,7 @@ loc: $(GEN_SOURCES)
 	@cat $^ | wc -l
 
 install: all
-	ocamlfind install portia META portia $(BACKEND_SOURCES:.ml=.cmo)
+	ocamlfind install portia META portia portia.cma $(LIB_SOURCES:.ml=.cmi) $(BACKEND_SOURCES:.ml=.cmo)
 
 uninstall:
 	ocamlfind remove portia
