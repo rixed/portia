@@ -160,7 +160,11 @@ let add id output fname off sz =
         registry
 
 let lookup id =
-    Hashtbl.find registry id
+    try Hashtbl.find registry id
+    with Not_found -> (
+        Printf.fprintf stderr "Cannot find definition for '%s'\n" id ;
+        exit 1
+    )
 @}
 ----
 

@@ -7,6 +7,5 @@ fwdepend
 *.opt
 *.html
 portia
-main.fw
 *.cmi
 *.cmo
