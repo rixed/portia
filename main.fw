@@ -51,13 +51,7 @@ By loading a conf, we merely want to load a compiled .cmo file:
 let load_lib libdir fname =
     let libname = libdir ^"/"^ fname ^".cmo" in
     Log.debug "loading lib %s\n" libname ;
-    let open Dynlink in
-    let fname = adapt_filename libname in
-    try loadfile fname
-    with Error err -> (
-        Printf.fprintf stderr "Cannot load %s: %s\n" fname (error_message err) ;
-        exit 1
-    )
+    Dynlink.(loadfile (adapt_filename libname))
 @}
 ----
 

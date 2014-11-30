@@ -35,13 +35,12 @@ giving generic names help building generic programs).
 Let's call these code fragments "definitions", then.
 
 What information is there in a definition?
-In no specific order, we have already seen that we need:
+We have already seen that we need its location used both for error reporting
+(file name, line number and column) and for fetching it quickly on demand
+(offset and size in bytes).
 
-* its location used both for error reporting (file name, line number and
-  column) and for fetching it quickly on demand (offset and size in
-  bytes). Also note the recording of the mtime so that we can tell, when
-  fetching the body, that the file have not changed since we collected this
-  definition.
+Also note the recording of the mtime so that we can tell, when fetching the
+body, that the file have not changed since we collected this definition.
 
 [source,ml]
 ----
@@ -54,10 +53,8 @@ type location = { file : string ;
                   size : int }@}
 ----
 
-with the GNU convention that:
-
-  Line numbers should start from 1 at the beginning of the file, and column
-  numbers should start from 1 at the beginning of the line.
+with the convenient convention that line and column numbers are actually offset
+from the start, thus start at 0, which allows us to add them naturally.
 
 Rather than having a single location, we want to allow for a definition to be
 split across many locations (the body of the definition is then the
@@ -126,16 +123,12 @@ mtime):
 ----
 @$@<Definitions@>+=@{@-
 exception FileChanged of string
-let body t =
+let fetch_loc loc =
     let open Unix in
-    let fetch_loc loc =
-        let fname = loc.file in
-        if (stat fname).st_mtime > loc.mtime then
-            raise (FileChanged fname) ;
-        read_file fname loc.offset loc.size in
-    let locs = t.loc :: List.rev t.locs in
-    List.map fetch_loc locs |>
-    String.concat ""
+    let fname = loc.file in
+    if (stat fname).st_mtime > loc.mtime then
+        raise (FileChanged fname) ;
+    read_file fname loc.offset loc.size
 @}
 ----
 
@@ -152,8 +145,8 @@ course the identifier for the definition.
 let registry = Hashtbl.create 31
 
 let add id output fname off sz =
-    Log.debug "Add definition for %s\n" id ;
     let loc = location_in_file fname off sz in
+    Log.debug "Add definition for %s at position %a\n" id location_print loc ;
     Hashtbl.modify_opt id (function
         | None   -> Some { loc ; id ; output ; locs = [] }
         | Some t -> Some { t with locs = loc :: t.locs })
@@ -192,8 +185,8 @@ function that will return the complete expanded body (or signal a problem).
 [source,ml]
 ----
 @$@<Definitions@>+=@{@-
-let rec expanded_body t =
-    let unexpanded = body t in
+let rec expanded_loc loc =
+    let unexpanded = fetch_loc loc in
     Log.debug "expand '%s'\n" unexpanded ;
     (* find_references returns a list of (id, start_offset, stop_offset) *)
     let refs = !Config.find_references unexpanded in
@@ -202,18 +195,18 @@ let rec expanded_body t =
         (List.print (Tuple3.print String.print Int.print Int.print)) refs ;
     let txt, last_stop =
         List.fold_left (fun (txt,last_stop) (id,start,stop) ->
-            let t' = lookup id in (* TODO: handle Not_found *)
+            let t' = lookup id in
             assert (start >= last_stop) ;
             let prec =
                 txt ^
                 String.sub unexpanded last_stop (start - last_stop) in
             let colno = colno_at prec in
+            (* FIXME: do not indent linenos! Nor string literals! *)
             let txt = prec ^ indent colno (expanded_body t') in
             (* add a linenum indication that we are back in this block *)
-            let ln =
-                !Config.linenum
-                    (t.loc.lineno + (lineno_at stop unexpanded))
-                    t.loc.file in
+            let ln = !Config.linenum
+                         (loc.lineno + (lineno_at stop unexpanded))
+                         loc.file in
             txt ^
             (if String.length ln > 0 &&
                 String.length txt > 0 &&
@@ -225,7 +218,12 @@ let rec expanded_body t =
     let rest = String.length unexpanded - last_stop in
     let txt = txt ^ String.sub unexpanded last_stop rest in
     (* Add line number information. *)
-    !Config.linenum t.loc.lineno t.loc.file ^ txt
+    !Config.linenum loc.lineno loc.file ^ txt
+
+and expanded_body t =
+    t.loc :: List.rev t.locs |>
+    List.map expanded_loc |>
+    String.concat ""
 @}
 ----
 
@@ -280,7 +278,7 @@ ocaml:
 ----
 @O@<ocaml.ml@>==@{@-
 let linenum lineno fname =
-    Printf.sprintf "# %d \"%s\"\n" lineno fname
+    Printf.sprintf "# %d \"%s\"\n" (lineno+1) fname
 
 let () = Config.linenum := linenum
 @}
@@ -292,17 +290,23 @@ and for C:
 ----
 @O@<c.ml@>==@{@-
 let linenum lineno fname =
-    Printf.sprintf "#line %d \"%s\"\n" lineno fname
+    Printf.sprintf "#line %d \"%s\"\n" (lineno+1) fname
 
 let () = Config.linenum := linenum
 @}
 ----
 
-One word about the linenum directive in OCaml. It is documented in the chapter
-6.1 (lexical conventions) of the OCaml manual, and from this documentation
-it appears that it is not constrained to appear alone on a line. We do make some
-effort to place these directives on dedicated lines, in order to generate better
-looking source files.
+Notice that those directives follow the GNU convention that:
+
+  Line numbers should start from 1 at the beginning of the file, and column
+  numbers should start from 1 at the beginning of the line.
+
+One more word about the linenum directive in OCaml. It is documented in the
+chapter 6.1 (lexical conventions) of the OCaml manual, and from this
+documentation it appears that it is not constrained to appear alone on a line.
+We do make some effort to place these directives on dedicated lines, in order
+to generate better looking source files.
+
 Also, notice that we must insert a linenum directive at the insertion point of
 each definition body and after each expansion to return to previous location.
 
