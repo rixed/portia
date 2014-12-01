@@ -14,7 +14,7 @@ open Definition
 let definition filename def =
     if def.output then (
         Log.debug "Generating %s...\n%!" filename ;
-        let text = expanded_body def |>
+        let text = expanded_body "" def |>
                    !Config.postprocess in
         output_file ~filename ~text
     ) else (

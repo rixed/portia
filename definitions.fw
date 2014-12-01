@@ -185,7 +185,7 @@ function that will return the complete expanded body (or signal a problem).
 [source,ml]
 ----
 @$@<Definitions@>+=@{@-
-let rec expanded_loc loc =
+let rec expanded_loc tab loc =
     let unexpanded = fetch_loc loc in
     Log.debug "expand '%s'\n" unexpanded ;
     (* find_references returns a list of (id, start_offset, stop_offset) *)
@@ -197,12 +197,15 @@ let rec expanded_loc loc =
         List.fold_left (fun (txt,last_stop) (id,start,stop) ->
             let t' = lookup id in
             assert (start >= last_stop) ;
-            let prec =
-                txt ^
-                String.sub unexpanded last_stop (start - last_stop) in
-            let colno = colno_at prec in
-            (* FIXME: do not indent linenos! Nor string literals! *)
-            let txt = prec ^ indent colno (expanded_body t') in
+            (* Warning: this will indent string literals! *)
+            let txt = txt ^
+                indent tab
+                       (String.sub unexpanded last_stop (start - last_stop)) in
+            (* Look for last \n in txt to know how to indent sub-definitions: *)
+            let txt_pre_nl, tab' =
+                try String.rsplit txt ~by:"\n"
+                with Not_found -> txt, "" in
+            let txt = txt_pre_nl ^ "\n" ^ (expanded_body tab' t') in
             (* add a linenum indication that we are back in this block *)
             let ln = !Config.linenum
                          (loc.lineno + (lineno_at stop unexpanded))
@@ -216,13 +219,14 @@ let rec expanded_loc loc =
             ("", 0) refs in
     (* Complete with what's left *)
     let rest = String.length unexpanded - last_stop in
-    let txt = txt ^ String.sub unexpanded last_stop rest in
+    let txt = txt ^
+        indent tab (String.sub unexpanded last_stop rest) in
     (* Add line number information. *)
     !Config.linenum loc.lineno loc.file ^ txt
 
-and expanded_body t =
+and expanded_body tab t =
     t.loc :: List.rev t.locs |>
-    List.map expanded_loc |>
+    List.map (expanded_loc tab) |>
     String.concat ""
 @}
 ----
@@ -235,12 +239,12 @@ we used up to here for helping dealing with text files and locations:
 ----
 @$@<TxtHelpers@>==@{@-
 let indent =
+    let spaces n = String.make n ' ' in
     let open Str in
     let re = regexp "\n\\([^\n]\\)" in
-    fun n str ->
-        if n = 0 then str else
-        let tab = String.make n ' ' in
-        global_replace re ("\n"^tab^"\\1") str
+    fun tab str ->
+        let tab' = spaces (String.length tab) in
+        tab ^ global_replace re ("\n"^ tab' ^"\\1") str
 
 (* first char is at column 0 *)
 let colno_at txt =

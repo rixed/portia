@@ -104,7 +104,7 @@ reinstall: uninstall install
 
 # Tests with qtest
 
-TEST_SOURCES = $(GEN_SOURCES)
+TEST_SOURCES = $(filter-out main.ml,$(GEN_SOURCES))
 all_tests.byte: $(TEST_SOURCES:.ml=.cmo) all_tests.ml
 	$(OCAMLC)   -o $@ $(SYNTAX) -package "$(REQUIRES) QTest2Lib" -linkpkg $(OCAMLFLAGS) -w -33 $^
 
