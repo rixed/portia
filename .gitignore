@@ -9,3 +9,4 @@ fwdepend
 portia
 *.cmi
 *.cmo
+main.fw
