@@ -23,7 +23,7 @@ So that our Config module thus far is merely:
 
 [source,ml]
 ----
-@O@<config.ml@>==@{@-
+@O@<portiaConfig.ml@>==@{@-
 let find_definitions =
     ref ((fun _txt -> []) : string -> (string * bool * int * int) list)
 let find_references =

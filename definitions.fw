@@ -146,7 +146,8 @@ let registry = Hashtbl.create 31
 
 let add id output fname off sz =
     let loc = location_in_file fname off sz in
-    Log.debug "Add definition for %s at position %a\n" id location_print loc ;
+    PortiaLog.debug "Add definition for %s at position %a\n"
+        id location_print loc ;
     Hashtbl.modify_opt id (function
         | None   -> Some { loc ; id ; output ; locs = [] }
         | Some t -> Some { t with locs = loc :: t.locs })
@@ -177,9 +178,9 @@ let location_in_file file offset size =
 @}
 ----
 
-Now the last part: expansion. Given a function Config.find_references (supplied
-by the configuration) that's able to spot all expansion points from a non
-expanded body, and the registry of all known definitions, let's build a
+Now the last part: expansion. Given a function PortiaConfig.find_references
+(supplied by the configuration) that's able to spot all expansion points from a
+non expanded body, and the registry of all known definitions, let's build a
 function that will return the complete expanded body (or signal a problem).
 
 [source,ml]
@@ -187,11 +188,11 @@ function that will return the complete expanded body (or signal a problem).
 @$@<Definitions@>+=@{@-
 let rec expanded_loc tab loc =
     let unexpanded = fetch_loc loc in
-    Log.debug "expand '%s'\n" unexpanded ;
+    PortiaLog.debug "expand '%s'\n" unexpanded ;
     (* find_references returns a list of (id, start_offset, stop_offset) *)
-    let refs = !Config.find_references unexpanded in
+    let refs = !PortiaConfig.find_references unexpanded in
     (* TODO: sort this list according to start_offset *)
-    Log.debug "found references: %a\n"
+    PortiaLog.debug "found references: %a\n"
         (List.print (Tuple3.print String.print Int.print Int.print)) refs ;
     let txt, last_stop =
         List.fold_left (fun (txt,last_stop) (id,start,stop) ->
@@ -207,7 +208,7 @@ let rec expanded_loc tab loc =
                 with Not_found -> txt, "" in
             let txt = txt_pre_nl ^ "\n" ^ (expanded_body tab' t') in
             (* add a linenum indication that we are back in this block *)
-            let ln = !Config.linenum
+            let ln = !PortiaConfig.linenum
                          (loc.lineno + (lineno_at stop unexpanded))
                          loc.file in
             txt ^
@@ -222,7 +223,7 @@ let rec expanded_loc tab loc =
     let txt = txt ^
         indent tab (String.sub unexpanded last_stop rest) in
     (* Add line number information. *)
-    !Config.linenum loc.lineno loc.file ^ txt
+    !PortiaConfig.linenum loc.lineno loc.file ^ txt
 
 and expanded_body tab t =
     t.loc :: List.rev t.locs |>
@@ -284,7 +285,7 @@ ocaml:
 let linenum lineno fname =
     Printf.sprintf "# %d \"%s\"\n" (lineno+1) fname
 
-let () = Config.linenum := linenum
+let () = PortiaConfig.linenum := linenum
 @}
 ----
 
@@ -296,7 +297,7 @@ and for C:
 let linenum lineno fname =
     Printf.sprintf "#line %d \"%s\"\n" (lineno+1) fname
 
-let () = Config.linenum := linenum
+let () = PortiaConfig.linenum := linenum
 @}
 ----
 
@@ -319,7 +320,7 @@ files(s) and writing output definitions.
 
 [source,ml]
 ----
-@O@<definition.ml@>==@{@-
+@O@<portiaDefinition.ml@>==@{@-
 open Batteries
 
 @<DefinitionType@>

@@ -8,17 +8,17 @@ output into a file, retrieve its expanded body then write it into the file:
 [source,ml]
 ----
 @$@<Output@>==@{@-
-open Definition
+open PortiaDefinition
 
 (* output a given definition *)
 let definition filename def =
     if def.output then (
-        Log.debug "Generating %s...\n%!" filename ;
+        PortiaLog.debug "Generating %s...\n%!" filename ;
         let text = expanded_body "" def |>
-                   !Config.postprocess in
+                   !PortiaConfig.postprocess in
         output_file ~filename ~text
     ) else (
-        Log.debug "No output file for %s\n%!" filename
+        PortiaLog.debug "No output file for %s\n%!" filename
     )
 
 (* output all registered definitions *)

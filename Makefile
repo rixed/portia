@@ -16,7 +16,7 @@ REQUIRES = batteries dynlink
 .SUFFIXES: .ml .mli .cmo .cmi .cmx .cmxs .fw .fwi
 
 FW_SOURCES = $(wildcard *.fw) main.fw
-LIB_SOURCES = log.ml config.ml definition.ml parse.ml
+LIB_SOURCES = portiaLog.ml portiaConfig.ml portiaDefinition.ml portiaParse.ml
 PROG_SOURCES = $(LIB_SOURCES) output.ml main.ml
 BACKEND_SOURCES = funnelweb.ml ocaml.ml c.ml
 GEN_SOURCES = $(PROG_SOURCES) $(BACKEND_SOURCES)

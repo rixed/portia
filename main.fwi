@@ -31,7 +31,7 @@ of source files to proceed `srcfiles`, looks like:
 ----
 @$@<Skeleton@>==@{
 List.iter (load_lib !libdir) !plugins ;
-List.iter Parse.parse !srcfiles ;
+List.iter PortiaParse.parse !srcfiles ;
 Output.all ()
 @}
 ----
@@ -50,7 +50,7 @@ By loading a conf, we merely want to load a compiled .cmo file:
 @$@<ConfigLoad@>==@{@-
 let load_lib libdir fname =
     let libname = libdir ^"/"^ fname ^".cmo" in
-    Log.debug "loading lib %s\n" libname ;
+    PortiaLog.debug "loading lib %s\n" libname ;
     Dynlink.(loadfile (adapt_filename libname))
 @}
 ----
@@ -74,7 +74,7 @@ let main =
                       (default to funnelweb)" ;
           "-libdir", Set_string libdir,
                      "Where to read plugins from" ;
-          "-debug",  Set Log.verbose,
+          "-debug",  Set PortiaLog.verbose,
                      "Output debug messages" ]
         (addlst srcfiles)
         "portia - literate programming preprocessor\n\

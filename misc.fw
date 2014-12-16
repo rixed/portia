@@ -8,12 +8,12 @@ not be complete without those.
 === Log
 
 For such a simple tool, we merely want to display debug messages or nothing at
-all, so the only implemented function is `Log.debug` and, depending on flag
-`debug` is either print on stderr or does nothing:
+all, so the only implemented function is `PortiaLog.debug` and, depending on
+flag `debug` is either print on stderr or does nothing:
 
 [source,ml]
 ----
-@O@<log.ml@>==@{@-
+@O@<portiaLog.ml@>==@{@-
 open Batteries
 
 let verbose = ref false

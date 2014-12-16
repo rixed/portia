@@ -27,12 +27,12 @@ let read_whole_file file =
     IO.read_all ic (* autoclosed *)
 
 let rec parse file =
-    Log.debug "Parsing file %s\n" file ;
+    PortiaLog.debug "Parsing file %s\n" file ;
     let txt = read_whole_file file in
-    !Config.find_definitions txt |>
+    !PortiaConfig.find_definitions txt |>
     List.iter (fun (id, output, start, stop) ->
-        Definition.add id output file start (stop-start)) ;
-    !Config.find_inclusions txt |>
+        PortiaDefinition.add id output file start (stop-start)) ;
+    !PortiaConfig.find_inclusions txt |>
     List.iter parse
 @}
 ----
@@ -42,7 +42,7 @@ module:
 
 [source,ml]
 ----
-@O@<parse.ml@>==@{@-
+@O@<portiaParse.ml@>==@{@-
 open Batteries
 
 @<Parsing@>
@@ -145,7 +145,7 @@ With the corresponding `find_definitions`:
 let find_definitions =
     let re = Str.regexp @<RegexForDefinition@> in
     fold_all_groups (fun l p ->
-        Log.debug "found def: %a\n"
+        PortiaLog.debug "found def: %a\n"
             (List.print (Option.print
                 (Tuple3.print String.print Int.print Int.print))) l ;
         match l with
@@ -207,7 +207,7 @@ output files.
 ----
 @O@<funnelweb.ml@>==@{@-
 open Batteries
-open Parse
+open PortiaParse
 
 @<FW_FindInclusions@>
 @<FW_FindDefinitions@>
@@ -215,9 +215,9 @@ open Parse
 @<FW_Postprocess@>
 
 let () =
-    Config.find_definitions := find_definitions ;
-    Config.find_references  := find_references ;
-    Config.find_inclusions  := find_inclusions ;
-    Config.postprocess      := postprocess
+    PortiaConfig.find_definitions := find_definitions ;
+    PortiaConfig.find_references  := find_references ;
+    PortiaConfig.find_inclusions  := find_inclusions ;
+    PortiaConfig.postprocess      := postprocess
 @}
 ----
