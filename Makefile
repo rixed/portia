@@ -23,6 +23,8 @@ GEN_SOURCES = $(PROG_SOURCES) $(BACKEND_SOURCES)
 
 all: $(BACKEND_SOURCES:.ml=.cmo) portia portia.cma $(LIB_SOURCES:.ml=.cmi)
 
+# We install only the bytecode version because that's easier to use bytecode
+# plugins. Who cares?
 portia: portia.byte
 	ln -f portia.byte portia
 
