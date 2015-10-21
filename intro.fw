@@ -40,7 +40,7 @@ bootstrapped processor.
 
 R3. Add correct file and line number informations into generated source code
 
-Whatever the programming language that's used of course.
+Whatever the programming language that's being used of course.
 
 R4. Do not output doc; rather, make code extraction flexible enough for the doc
     to be written in any documentation language in the first place

@@ -16,7 +16,7 @@ to.  Of course, this context is not easy to acquire without prior knowledge of
 these somewhat arbitrary definitions, so it takes some time and effort to pull
 oneself out of this catch-22 situation.
 
-So, after this short introduction have hopefully drive my reader to
+So, after this short introduction have hopefully inclined my reader to
 leniency, let's ask ourself what the name of a program fragment should be.
 Shall we keep calling it a "program fragment"? But this implies that this is
 part of a program, which is not required. Should it be an "extract", considered
@@ -96,7 +96,7 @@ It's always a good idea to write proper printers for any new type. This may
 looks fastidious but you are actually doing yourself a favor: better have these
 printers ready before they are needed than to have to write them quickly while
 struggling with a bug. Especially when using Batteries which make writing and
-using such printer more convenient than stock OCaml.
+using such printers so easy.
 
 So here they are:
 
