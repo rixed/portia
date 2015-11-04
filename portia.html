@@ -1,0 +1,1682 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+    "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+<meta name="generator" content="AsciiDoc 8.6.9" />
+<title>Portia: a text processor for literate programs</title>
+<style type="text/css">
+/* Shared CSS for AsciiDoc xhtml11 and html5 backends */
+
+/* Default font. */
+body {
+  font-family: Georgia,serif;
+}
+
+/* Title font. */
+h1, h2, h3, h4, h5, h6,
+div.title, caption.title,
+thead, p.table.header,
+#toctitle,
+#author, #revnumber, #revdate, #revremark,
+#footer {
+  font-family: Arial,Helvetica,sans-serif;
+}
+
+body {
+  margin: 1em 5% 1em 5%;
+}
+
+a {
+  color: blue;
+  text-decoration: underline;
+}
+a:visited {
+  color: fuchsia;
+}
+
+em {
+  font-style: italic;
+  color: navy;
+}
+
+strong {
+  font-weight: bold;
+  color: #083194;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #527bbd;
+  margin-top: 1.2em;
+  margin-bottom: 0.5em;
+  line-height: 1.3;
+}
+
+h1, h2, h3 {
+  border-bottom: 2px solid silver;
+}
+h2 {
+  padding-top: 0.5em;
+}
+h3 {
+  float: left;
+}
+h3 + * {
+  clear: left;
+}
+h5 {
+  font-size: 1.0em;
+}
+
+div.sectionbody {
+  margin-left: 0;
+}
+
+hr {
+  border: 1px solid silver;
+}
+
+p {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+ul, ol, li > p {
+  margin-top: 0;
+}
+ul > li     { color: #aaa; }
+ul > li > * { color: black; }
+
+.monospaced, code, pre {
+  font-family: "Courier New", Courier, monospace;
+  font-size: inherit;
+  color: navy;
+  padding: 0;
+  margin: 0;
+}
+pre {
+  white-space: pre-wrap;
+}
+
+#author {
+  color: #527bbd;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+#email {
+}
+#revnumber, #revdate, #revremark {
+}
+
+#footer {
+  font-size: small;
+  border-top: 2px solid silver;
+  padding-top: 0.5em;
+  margin-top: 4.0em;
+}
+#footer-text {
+  float: left;
+  padding-bottom: 0.5em;
+}
+#footer-badges {
+  float: right;
+  padding-bottom: 0.5em;
+}
+
+#preamble {
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+}
+div.imageblock, div.exampleblock, div.verseblock,
+div.quoteblock, div.literalblock, div.listingblock, div.sidebarblock,
+div.admonitionblock {
+  margin-top: 1.0em;
+  margin-bottom: 1.5em;
+}
+div.admonitionblock {
+  margin-top: 2.0em;
+  margin-bottom: 2.0em;
+  margin-right: 10%;
+  color: #606060;
+}
+
+div.content { /* Block element content. */
+  padding: 0;
+}
+
+/* Block element titles. */
+div.title, caption.title {
+  color: #527bbd;
+  font-weight: bold;
+  text-align: left;
+  margin-top: 1.0em;
+  margin-bottom: 0.5em;
+}
+div.title + * {
+  margin-top: 0;
+}
+
+td div.title:first-child {
+  margin-top: 0.0em;
+}
+div.content div.title:first-child {
+  margin-top: 0.0em;
+}
+div.content + div.title {
+  margin-top: 0.0em;
+}
+
+div.sidebarblock > div.content {
+  background: #ffffee;
+  border: 1px solid #dddddd;
+  border-left: 4px solid #f0f0f0;
+  padding: 0.5em;
+}
+
+div.listingblock > div.content {
+  border: 1px solid #dddddd;
+  border-left: 5px solid #f0f0f0;
+  background: #f8f8f8;
+  padding: 0.5em;
+}
+
+div.quoteblock, div.verseblock {
+  padding-left: 1.0em;
+  margin-left: 1.0em;
+  margin-right: 10%;
+  border-left: 5px solid #f0f0f0;
+  color: #888;
+}
+
+div.quoteblock > div.attribution {
+  padding-top: 0.5em;
+  text-align: right;
+}
+
+div.verseblock > pre.content {
+  font-family: inherit;
+  font-size: inherit;
+}
+div.verseblock > div.attribution {
+  padding-top: 0.75em;
+  text-align: left;
+}
+/* DEPRECATED: Pre version 8.2.7 verse style literal block. */
+div.verseblock + div.attribution {
+  text-align: left;
+}
+
+div.admonitionblock .icon {
+  vertical-align: top;
+  font-size: 1.1em;
+  font-weight: bold;
+  text-decoration: underline;
+  color: #527bbd;
+  padding-right: 0.5em;
+}
+div.admonitionblock td.content {
+  padding-left: 0.5em;
+  border-left: 3px solid #dddddd;
+}
+
+div.exampleblock > div.content {
+  border-left: 3px solid #dddddd;
+  padding-left: 0.5em;
+}
+
+div.imageblock div.content { padding-left: 0; }
+span.image img { border-style: none; vertical-align: text-bottom; }
+a.image:visited { color: white; }
+
+dl {
+  margin-top: 0.8em;
+  margin-bottom: 0.8em;
+}
+dt {
+  margin-top: 0.5em;
+  margin-bottom: 0;
+  font-style: normal;
+  color: navy;
+}
+dd > *:first-child {
+  margin-top: 0.1em;
+}
+
+ul, ol {
+    list-style-position: outside;
+}
+ol.arabic {
+  list-style-type: decimal;
+}
+ol.loweralpha {
+  list-style-type: lower-alpha;
+}
+ol.upperalpha {
+  list-style-type: upper-alpha;
+}
+ol.lowerroman {
+  list-style-type: lower-roman;
+}
+ol.upperroman {
+  list-style-type: upper-roman;
+}
+
+div.compact ul, div.compact ol,
+div.compact p, div.compact p,
+div.compact div, div.compact div {
+  margin-top: 0.1em;
+  margin-bottom: 0.1em;
+}
+
+tfoot {
+  font-weight: bold;
+}
+td > div.verse {
+  white-space: pre;
+}
+
+div.hdlist {
+  margin-top: 0.8em;
+  margin-bottom: 0.8em;
+}
+div.hdlist tr {
+  padding-bottom: 15px;
+}
+dt.hdlist1.strong, td.hdlist1.strong {
+  font-weight: bold;
+}
+td.hdlist1 {
+  vertical-align: top;
+  font-style: normal;
+  padding-right: 0.8em;
+  color: navy;
+}
+td.hdlist2 {
+  vertical-align: top;
+}
+div.hdlist.compact tr {
+  margin: 0;
+  padding-bottom: 0;
+}
+
+.comment {
+  background: yellow;
+}
+
+.footnote, .footnoteref {
+  font-size: 0.8em;
+}
+
+span.footnote, span.footnoteref {
+  vertical-align: super;
+}
+
+#footnotes {
+  margin: 20px 0 20px 0;
+  padding: 7px 0 0 0;
+}
+
+#footnotes div.footnote {
+  margin: 0 0 5px 0;
+}
+
+#footnotes hr {
+  border: none;
+  border-top: 1px solid silver;
+  height: 1px;
+  text-align: left;
+  margin-left: 0;
+  width: 20%;
+  min-width: 100px;
+}
+
+div.colist td {
+  padding-right: 0.5em;
+  padding-bottom: 0.3em;
+  vertical-align: top;
+}
+div.colist td img {
+  margin-top: 0.3em;
+}
+
+@media print {
+  #footer-badges { display: none; }
+}
+
+#toc {
+  margin-bottom: 2.5em;
+}
+
+#toctitle {
+  color: #527bbd;
+  font-size: 1.1em;
+  font-weight: bold;
+  margin-top: 1.0em;
+  margin-bottom: 0.1em;
+}
+
+div.toclevel0, div.toclevel1, div.toclevel2, div.toclevel3, div.toclevel4 {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+div.toclevel2 {
+  margin-left: 2em;
+  font-size: 0.9em;
+}
+div.toclevel3 {
+  margin-left: 4em;
+  font-size: 0.9em;
+}
+div.toclevel4 {
+  margin-left: 6em;
+  font-size: 0.9em;
+}
+
+span.aqua { color: aqua; }
+span.black { color: black; }
+span.blue { color: blue; }
+span.fuchsia { color: fuchsia; }
+span.gray { color: gray; }
+span.green { color: green; }
+span.lime { color: lime; }
+span.maroon { color: maroon; }
+span.navy { color: navy; }
+span.olive { color: olive; }
+span.purple { color: purple; }
+span.red { color: red; }
+span.silver { color: silver; }
+span.teal { color: teal; }
+span.white { color: white; }
+span.yellow { color: yellow; }
+
+span.aqua-background { background: aqua; }
+span.black-background { background: black; }
+span.blue-background { background: blue; }
+span.fuchsia-background { background: fuchsia; }
+span.gray-background { background: gray; }
+span.green-background { background: green; }
+span.lime-background { background: lime; }
+span.maroon-background { background: maroon; }
+span.navy-background { background: navy; }
+span.olive-background { background: olive; }
+span.purple-background { background: purple; }
+span.red-background { background: red; }
+span.silver-background { background: silver; }
+span.teal-background { background: teal; }
+span.white-background { background: white; }
+span.yellow-background { background: yellow; }
+
+span.big { font-size: 2em; }
+span.small { font-size: 0.6em; }
+
+span.underline { text-decoration: underline; }
+span.overline { text-decoration: overline; }
+span.line-through { text-decoration: line-through; }
+
+div.unbreakable { page-break-inside: avoid; }
+
+
+/*
+ * xhtml11 specific
+ *
+ * */
+
+div.tableblock {
+  margin-top: 1.0em;
+  margin-bottom: 1.5em;
+}
+div.tableblock > table {
+  border: 3px solid #527bbd;
+}
+thead, p.table.header {
+  font-weight: bold;
+  color: #527bbd;
+}
+p.table {
+  margin-top: 0;
+}
+/* Because the table frame attribute is overriden by CSS in most browsers. */
+div.tableblock > table[frame="void"] {
+  border-style: none;
+}
+div.tableblock > table[frame="hsides"] {
+  border-left-style: none;
+  border-right-style: none;
+}
+div.tableblock > table[frame="vsides"] {
+  border-top-style: none;
+  border-bottom-style: none;
+}
+
+
+/*
+ * html5 specific
+ *
+ * */
+
+table.tableblock {
+  margin-top: 1.0em;
+  margin-bottom: 1.5em;
+}
+thead, p.tableblock.header {
+  font-weight: bold;
+  color: #527bbd;
+}
+p.tableblock {
+  margin-top: 0;
+}
+table.tableblock {
+  border-width: 3px;
+  border-spacing: 0px;
+  border-style: solid;
+  border-color: #527bbd;
+  border-collapse: collapse;
+}
+th.tableblock, td.tableblock {
+  border-width: 1px;
+  padding: 4px;
+  border-style: solid;
+  border-color: #527bbd;
+}
+
+table.tableblock.frame-topbot {
+  border-left-style: hidden;
+  border-right-style: hidden;
+}
+table.tableblock.frame-sides {
+  border-top-style: hidden;
+  border-bottom-style: hidden;
+}
+table.tableblock.frame-none {
+  border-style: hidden;
+}
+
+th.tableblock.halign-left, td.tableblock.halign-left {
+  text-align: left;
+}
+th.tableblock.halign-center, td.tableblock.halign-center {
+  text-align: center;
+}
+th.tableblock.halign-right, td.tableblock.halign-right {
+  text-align: right;
+}
+
+th.tableblock.valign-top, td.tableblock.valign-top {
+  vertical-align: top;
+}
+th.tableblock.valign-middle, td.tableblock.valign-middle {
+  vertical-align: middle;
+}
+th.tableblock.valign-bottom, td.tableblock.valign-bottom {
+  vertical-align: bottom;
+}
+
+
+/*
+ * manpage specific
+ *
+ * */
+
+body.manpage h1 {
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+  border-top: 2px solid silver;
+  border-bottom: 2px solid silver;
+}
+body.manpage h2 {
+  border-style: none;
+}
+body.manpage div.sectionbody {
+  margin-left: 3em;
+}
+
+@media print {
+  body.manpage div#toc { display: none; }
+}
+
+
+</style>
+<script type="text/javascript">
+/*<![CDATA[*/
+var asciidoc = {  // Namespace.
+
+/////////////////////////////////////////////////////////////////////
+// Table Of Contents generator
+/////////////////////////////////////////////////////////////////////
+
+/* Author: Mihai Bazon, September 2002
+ * http://students.infoiasi.ro/~mishoo
+ *
+ * Table Of Content generator
+ * Version: 0.4
+ *
+ * Feel free to use this script under the terms of the GNU General Public
+ * License, as long as you do not remove or alter this notice.
+ */
+
+ /* modified by Troy D. Hanson, September 2006. License: GPL */
+ /* modified by Stuart Rackham, 2006, 2009. License: GPL */
+
+// toclevels = 1..4.
+toc: function (toclevels) {
+
+  function getText(el) {
+    var text = "";
+    for (var i = el.firstChild; i != null; i = i.nextSibling) {
+      if (i.nodeType == 3 /* Node.TEXT_NODE */) // IE doesn't speak constants.
+        text += i.data;
+      else if (i.firstChild != null)
+        text += getText(i);
+    }
+    return text;
+  }
+
+  function TocEntry(el, text, toclevel) {
+    this.element = el;
+    this.text = text;
+    this.toclevel = toclevel;
+  }
+
+  function tocEntries(el, toclevels) {
+    var result = new Array;
+    var re = new RegExp('[hH]([1-'+(toclevels+1)+'])');
+    // Function that scans the DOM tree for header elements (the DOM2
+    // nodeIterator API would be a better technique but not supported by all
+    // browsers).
+    var iterate = function (el) {
+      for (var i = el.firstChild; i != null; i = i.nextSibling) {
+        if (i.nodeType == 1 /* Node.ELEMENT_NODE */) {
+          var mo = re.exec(i.tagName);
+          if (mo && (i.getAttribute("class") || i.getAttribute("className")) != "float") {
+            result[result.length] = new TocEntry(i, getText(i), mo[1]-1);
+          }
+          iterate(i);
+        }
+      }
+    }
+    iterate(el);
+    return result;
+  }
+
+  var toc = document.getElementById("toc");
+  if (!toc) {
+    return;
+  }
+
+  // Delete existing TOC entries in case we're reloading the TOC.
+  var tocEntriesToRemove = [];
+  var i;
+  for (i = 0; i < toc.childNodes.length; i++) {
+    var entry = toc.childNodes[i];
+    if (entry.nodeName.toLowerCase() == 'div'
+     && entry.getAttribute("class")
+     && entry.getAttribute("class").match(/^toclevel/))
+      tocEntriesToRemove.push(entry);
+  }
+  for (i = 0; i < tocEntriesToRemove.length; i++) {
+    toc.removeChild(tocEntriesToRemove[i]);
+  }
+
+  // Rebuild TOC entries.
+  var entries = tocEntries(document.getElementById("content"), toclevels);
+  for (var i = 0; i < entries.length; ++i) {
+    var entry = entries[i];
+    if (entry.element.id == "")
+      entry.element.id = "_toc_" + i;
+    var a = document.createElement("a");
+    a.href = "#" + entry.element.id;
+    a.appendChild(document.createTextNode(entry.text));
+    var div = document.createElement("div");
+    div.appendChild(a);
+    div.className = "toclevel" + entry.toclevel;
+    toc.appendChild(div);
+  }
+  if (entries.length == 0)
+    toc.parentNode.removeChild(toc);
+},
+
+
+/////////////////////////////////////////////////////////////////////
+// Footnotes generator
+/////////////////////////////////////////////////////////////////////
+
+/* Based on footnote generation code from:
+ * http://www.brandspankingnew.net/archive/2005/07/format_footnote.html
+ */
+
+footnotes: function () {
+  // Delete existing footnote entries in case we're reloading the footnodes.
+  var i;
+  var noteholder = document.getElementById("footnotes");
+  if (!noteholder) {
+    return;
+  }
+  var entriesToRemove = [];
+  for (i = 0; i < noteholder.childNodes.length; i++) {
+    var entry = noteholder.childNodes[i];
+    if (entry.nodeName.toLowerCase() == 'div' && entry.getAttribute("class") == "footnote")
+      entriesToRemove.push(entry);
+  }
+  for (i = 0; i < entriesToRemove.length; i++) {
+    noteholder.removeChild(entriesToRemove[i]);
+  }
+
+  // Rebuild footnote entries.
+  var cont = document.getElementById("content");
+  var spans = cont.getElementsByTagName("span");
+  var refs = {};
+  var n = 0;
+  for (i=0; i<spans.length; i++) {
+    if (spans[i].className == "footnote") {
+      n++;
+      var note = spans[i].getAttribute("data-note");
+      if (!note) {
+        // Use [\s\S] in place of . so multi-line matches work.
+        // Because JavaScript has no s (dotall) regex flag.
+        note = spans[i].innerHTML.match(/\s*\[([\s\S]*)]\s*/)[1];
+        spans[i].innerHTML =
+          "[<a id='_footnoteref_" + n + "' href='#_footnote_" + n +
+          "' title='View footnote' class='footnote'>" + n + "</a>]";
+        spans[i].setAttribute("data-note", note);
+      }
+      noteholder.innerHTML +=
+        "<div class='footnote' id='_footnote_" + n + "'>" +
+        "<a href='#_footnoteref_" + n + "' title='Return to text'>" +
+        n + "</a>. " + note + "</div>";
+      var id =spans[i].getAttribute("id");
+      if (id != null) refs["#"+id] = n;
+    }
+  }
+  if (n == 0)
+    noteholder.parentNode.removeChild(noteholder);
+  else {
+    // Process footnoterefs.
+    for (i=0; i<spans.length; i++) {
+      if (spans[i].className == "footnoteref") {
+        var href = spans[i].getElementsByTagName("a")[0].getAttribute("href");
+        href = href.match(/#.*/)[0];  // Because IE return full URL.
+        n = refs[href];
+        spans[i].innerHTML =
+          "[<a href='#_footnote_" + n +
+          "' title='View footnote' class='footnote'>" + n + "</a>]";
+      }
+    }
+  }
+},
+
+install: function(toclevels) {
+  var timerId;
+
+  function reinstall() {
+    asciidoc.footnotes();
+    if (toclevels) {
+      asciidoc.toc(toclevels);
+    }
+  }
+
+  function reinstallAndRemoveTimer() {
+    clearInterval(timerId);
+    reinstall();
+  }
+
+  timerId = setInterval(reinstall, 500);
+  if (document.addEventListener)
+    document.addEventListener("DOMContentLoaded", reinstallAndRemoveTimer, false);
+  else
+    window.onload = reinstallAndRemoveTimer;
+}
+
+}
+asciidoc.install(2);
+/*]]>*/
+</script>
+</head>
+<body class="article">
+<div id="header">
+<h1>Portia: a text processor for literate programs</h1>
+<div id="toc">
+  <div id="toctitle">Table of Contents</div>
+  <noscript><p><b>JavaScript must be enabled in your browser to display the table of contents.</b></p></noscript>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="_what_8217_s_literate_programming">1. What&#8217;s literate programming?</h2>
+<div class="sectionbody">
+<div class="paragraph"><p><a href="http://en.wikipedia.org/wiki/Literate_programming">better ask Wikipedia</a></p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_why_another_preprocessor">2. Why another preprocessor?</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Because no literate programming preprocessor allows any document language
+and any programming language. I, for one, like to embed fragments of OCaml in
+asciidoc files.</p></div>
+<div class="paragraph"><p>Here are the requirements and short rationals:</p></div>
+<div class="paragraph"><p>R1. Must be able to build itself</p></div>
+<div class="paragraph"><p>That&#8217;s the fun part.</p></div>
+<div class="paragraph"><p>R2. Must be bootstrapable with funnelweb</p></div>
+<div class="paragraph"><p>Because funnelweb is quite usable. Especially, it is agnostic with regard to
+the programming language and almost so regarding the documentation language.</p></div>
+<div class="paragraph"><p>It follows from these requirements that we should either follow funnelweb
+syntax, which is ugly, or build a tool that&#8217;s flexible enough to act like
+funnelweb (or at least, that can understand a workable subset of funnelweb
+syntax).</p></div>
+<div class="paragraph"><p>Ideally, all escaping sequences of the macro system can be redefined.
+When bootstrapping (with the actual funnelweb) we do not mind the quality of
+the generated documentation since we can produce a better documentation (and
+source code, thanks to requirement R3 &amp; R4) from recompiling with the
+bootstrapped processor.</p></div>
+<div class="paragraph"><p>R3. Add correct file and line number informations into generated source code</p></div>
+<div class="paragraph"><p>Whatever the programming language that&#8217;s being used of course.</p></div>
+<div class="paragraph"><p>R4. Do not output doc; rather, make code extraction flexible enough for the doc
+    to be written in any documentation language in the first place</p></div>
+<div class="paragraph"><p>The documentation being the important part, do not interfere with it.</p></div>
+<div class="paragraph"><p>R5. Code blocks may be inline</p></div>
+<div class="paragraph"><p>Like short mathematical formulas are better inline.</p></div>
+<div class="paragraph"><p>R6. Must not require to have all the text, nor all the code, present in memory</p></div>
+<div class="paragraph"><p>Funnelweb builds a whole source code representation in memory before outputing
+anything. This is frightening. Despite I&#8217;ve never used literate style for
+anything but trivial program I believe the technique suits huge programs just
+as well.</p></div>
+<div class="paragraph"><p>R7. Can split content into several files</p></div>
+<div class="paragraph"><p>Quite obvious.</p></div>
+<div class="paragraph"><p>R8. Named code fragments may be defined from several places (even in different
+    files)</p></div>
+<div class="paragraph"><p>In literate programming, the human reader must remember the main names used by
+the program as well as the names used to reference important code fragments.
+In order to limit the number of unessential definitions, Funnelweb allows to
+build a macro definition incrementally so that you must not introduce temporary
+names just to insert commentary in between two related code fragments.</p></div>
+<div class="paragraph"><p>R9. Support an include directive</p></div>
+<div class="paragraph"><p>Since we do not care about the order in which the code fragments will be
+encountered, and we do not care neither in what order we scan the documentation
+(since we do not produce a documentation according to R4), then we can merely be
+given a list of files to scan from the command line. We do not need an include
+directive as funnelweb (and other) does.</p></div>
+<div class="paragraph"><p>Still, many documentation language has an include directive and if we were able
+to follow it then we could alleviate the user from the need to maintain this
+list of files (since we could find everything from the root document).</p></div>
+<div class="paragraph"><p>So we do both: we will scan everything from the command line and additionally,
+if we are taught how to spot an include directive, then we will try to follow
+it.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_overview">3. Overview</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>For generating source code (remember R4: we do not have to generate the doc),
+we need a few directives:</p></div>
+<div class="ulist"><ul>
+<li>
+<p>
+define and name a block of code (see R5)
+</p>
+</li>
+<li>
+<p>
+reference a block of code by name (from another block of code or from the
+  literate text)
+</p>
+</li>
+<li>
+<p>
+define and output to a file a block of code
+</p>
+</li>
+<li>
+<p>
+add a file to the list of processed files (see R9)
+</p>
+</li>
+</ul></div>
+<div class="paragraph"><p>We are going to use the <a href="http://ocaml.org">OCaml language</a> because it&#8217;s
+compendious yet fast.</p></div>
+<div class="paragraph"><p>The program basically reads its configuration file (or load its compiled
+configuration file), then proceed with reading the given file, building a
+dictionary of block definitions and loading additional files along the way,
+keeping track of code blocks definitions and modification time of the used
+files, and checking everything.</p></div>
+<div class="paragraph"><p>Then it outputs the code, rereading the files to fetch code blocks so that we
+do not have to hold in memory a quantity of information equivalent of the
+resulting source code.</p></div>
+<div class="paragraph"><p>So the basic skeleton, given a set of configuration files <code>plugins</code> and a list
+of source files to proceed <code>srcfiles</code>, looks like:</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@$@<span style="color: #990000">&lt;</span><span style="color: #009900">Skeleton</span>@<span style="color: #990000">&gt;==</span>@<span style="color: #FF0000">{</span>
+<span style="font-weight: bold"><span style="color: #000080">List</span></span><span style="color: #990000">.</span>iter <span style="color: #990000">(</span>load_lib <span style="color: #990000">!</span>libdir<span style="color: #990000">)</span> <span style="color: #990000">!</span>plugins <span style="color: #990000">;</span>
+<span style="font-weight: bold"><span style="color: #000080">List</span></span><span style="color: #990000">.</span>iter <span style="font-weight: bold"><span style="color: #000080">PortiaParse</span></span><span style="color: #990000">.</span>parse <span style="color: #990000">!</span>srcfiles <span style="color: #990000">;</span>
+<span style="font-weight: bold"><span style="color: #000080">Output</span></span><span style="color: #990000">.</span>all <span style="color: #990000">()</span>
+@<span style="color: #FF0000">}</span></tt></pre></div></div>
+<div class="paragraph"><p>Notice that configuration does not appear here, nor does harvested definitions.
+They lies in global variables, which suits this short lived program just fine.
+We won&#8217;t worry about configuration parameters yet. Suffice to say that all of
+these global parameters, regular expressions and functions (remember some
+filters may be functions) are references defined in a module unambiguously
+named <code>Config</code>.</p></div>
+<div class="paragraph"><p>By loading a conf, we merely want to load a compiled .cmo file:</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@$@<span style="color: #990000">&lt;</span><span style="color: #009900">ConfigLoad</span>@<span style="color: #990000">&gt;==</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> load_lib libdir fname <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> libname <span style="color: #990000">=</span> libdir <span style="color: #990000">^</span><span style="color: #FF0000">"/"</span><span style="color: #990000">^</span> fname <span style="color: #990000">^</span><span style="color: #FF0000">".cmo"</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    <span style="font-weight: bold"><span style="color: #000080">PortiaLog</span></span><span style="color: #990000">.</span>debug <span style="color: #FF0000">"loading lib %s\n"</span> libname <span style="color: #990000">;</span>
+    <span style="font-weight: bold"><span style="color: #000080">Dynlink</span></span><span style="color: #990000">.(</span>loadfile <span style="color: #990000">(</span>adapt_filename libname<span style="color: #990000">))</span>
+@<span style="color: #FF0000">}</span></tt></pre></div></div>
+<div class="paragraph"><p>This is enough for a user to choose between several plugins (funnelweb, &#8230;).</p></div>
+<div class="paragraph"><p>So we only need this entry point to parse command line arguments and we are
+done with the boring work:</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@$@<span style="color: #990000">&lt;</span><span style="color: #009900">EntryPoint</span>@<span style="color: #990000">&gt;==</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> main <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> plugins <span style="color: #990000">=</span> <span style="color: #009900">ref</span> <span style="color: #990000">[]</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> libdir <span style="color: #990000">=</span> <span style="color: #009900">ref</span> <span style="color: #FF0000">"/usr/lib/portia"</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> srcfiles <span style="color: #990000">=</span> <span style="color: #009900">ref</span> <span style="color: #990000">[]</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> addlst l s <span style="color: #990000">=</span> l <span style="color: #990000">:=</span> s <span style="color: #990000">::</span> <span style="color: #990000">!</span>l <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    <span style="font-weight: bold"><span style="color: #000080">Arg</span></span><span style="color: #990000">.(</span>parse
+        <span style="color: #990000">[</span> <span style="color: #FF0000">"-syntax"</span><span style="color: #990000">,</span> <span style="color: #009900">String</span> <span style="color: #990000">(</span>addlst plugins<span style="color: #990000">),</span>
+                     "<span style="color: #009900">Name</span> <span style="font-weight: bold"><span style="color: #0000FF">of</span></span> the plugin <span style="font-weight: bold"><span style="color: #0000FF">to</span></span> use <span style="font-weight: bold"><span style="color: #0000FF">for</span></span> parsing files <span style="color: #990000">\</span>
+                      <span style="color: #990000">(</span>default <span style="font-weight: bold"><span style="color: #0000FF">to</span></span> funnelweb<span style="color: #990000">)</span>" <span style="color: #990000">;</span>
+          <span style="color: #FF0000">"-libdir"</span><span style="color: #990000">,</span> <span style="color: #009900">Set_string</span> libdir<span style="color: #990000">,</span>
+                     <span style="color: #FF0000">"Where to read plugins from"</span> <span style="color: #990000">;</span>
+          <span style="color: #FF0000">"-debug"</span><span style="color: #990000">,</span>  <span style="color: #009900">Set</span> <span style="font-weight: bold"><span style="color: #000080">PortiaLog</span></span><span style="color: #990000">.</span>verbose<span style="color: #990000">,</span>
+                     <span style="color: #FF0000">"Output debug messages"</span> <span style="color: #990000">]</span>
+        <span style="color: #990000">(</span>addlst srcfiles<span style="color: #990000">)</span>
+        "portia <span style="color: #990000">-</span> literate programming preprocessor<span style="color: #990000">\</span>n<span style="color: #990000">\</span>
+         <span style="color: #990000">\</span>n<span style="color: #990000">\</span>
+         portia <span style="color: #990000">[</span>options<span style="color: #990000">]</span> files<span style="color: #990000">...\</span>n<span style="color: #990000">\</span>
+         <span style="color: #009900">Will</span> output source code from given files<span style="color: #990000">.\</span>n"<span style="color: #990000">)</span> <span style="color: #990000">;</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">if</span></span> <span style="color: #990000">!</span>plugins <span style="color: #990000">=</span> <span style="color: #990000">[]</span> <span style="font-weight: bold"><span style="color: #0000FF">then</span></span> addlst plugins <span style="color: #FF0000">"funnelweb"</span> <span style="color: #990000">;</span> <span style="font-style: italic"><span style="color: #9A1900">(* default syntax *)</span></span>
+    @<span style="color: #990000">&lt;</span><span style="color: #009900">Skeleton</span>@<span style="color: #990000">&gt;</span>
+@<span style="color: #FF0000">}</span></tt></pre></div></div>
+<div class="paragraph"><p>So we have the Main module (linked last):</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><code>@O@&lt;main.ml@&gt;==@{@-
+open Batteries
+
+@&lt;ConfigLoad@&gt;
+@&lt;EntryPoint@&gt;
+@}</code></pre>
+</div></div>
+<div class="paragraph"><p>Let&#8217;s focus now on our main data type, the code block definition.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_code_block_definitions">4. Code block definitions</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>It is well known that naming things is the most difficult part in programming.
+This has to do with the fact that a large part of programming consists in
+inventing many simple but abstract concepts with no counterpart in actual life
+or pre-existing abstractions from other intellectual fields.  Sometime we can
+borrow a term or two from mathematics but mostly we have to give names to
+things that are relevant only to our program, maybe not even for its full
+lifetime.</p></div>
+<div class="paragraph"><p>So we have to repeatedly look for designations close enough to what we actually
+mean that, with enough context, it will become clear what concept they refer
+to.  Of course, this context is not easy to acquire without prior knowledge of
+these somewhat arbitrary definitions, so it takes some time and effort to pull
+oneself out of this catch-22 situation.</p></div>
+<div class="paragraph"><p>So, after this short introduction have hopefully inclined my reader to
+leniency, let&#8217;s ask ourself what the name of a program fragment should be.
+Shall we keep calling it a "program fragment"? But this implies that this is
+part of a program, which is not required. Should it be an "extract", considered
+this fragment is separated from the rest for display purpose?  Or a "phrase",
+considered it&#8217;s part of a larger "discourse" (the program)?</p></div>
+<div class="paragraph"><p>Or, if we forget what we manipulate to consider how we manipulate it,
+should it be called a "macro body"? Merely a "macro" or "body"? Or a
+"definition"?  This point of view is seducing since it makes our program a more
+general purpose text processor rather than a specialized tool for literate
+programming (of course a type or variable name is not really part of the
+running program and so cannot alter its behavior in any way, but I believe in
+the power of names to influence our reasoning about abstractions and that
+giving generic names help building generic programs).</p></div>
+<div class="paragraph"><p>Let&#8217;s call these code fragments "definitions", then.</p></div>
+<div class="paragraph"><p>What information is there in a definition?
+We have already seen that we need its location used both for error reporting
+(file name, line number and column) and for fetching it quickly on demand
+(offset and size in bytes).</p></div>
+<div class="paragraph"><p>Also note the recording of the mtime so that we can tell, when fetching the
+body, that the file have not changed since we collected this definition.</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@$@<span style="color: #990000">&lt;</span><span style="color: #009900">Location</span>@<span style="color: #990000">&gt;==</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
+<span style="font-weight: bold"><span style="color: #0000FF">type</span></span> location <span style="color: #990000">=</span> <span style="color: #FF0000">{</span> file <span style="color: #990000">:</span> <span style="color: #009900">string</span> <span style="color: #990000">;</span>
+                 mtime <span style="color: #990000">:</span> <span style="color: #009900">float</span> <span style="color: #990000">;</span>
+                lineno <span style="color: #990000">:</span> <span style="color: #009900">int</span> <span style="color: #990000">;</span>
+                 colno <span style="color: #990000">:</span> <span style="color: #009900">int</span> <span style="color: #990000">;</span>
+                offset <span style="color: #990000">:</span> <span style="color: #009900">int</span> <span style="color: #990000">;</span>
+                  size <span style="color: #990000">:</span> <span style="color: #009900">int</span> <span style="color: #FF0000">}</span>@<span style="color: #FF0000">}</span></tt></pre></div></div>
+<div class="paragraph"><p>with the convenient convention that line and column numbers are actually offset
+from the start, thus start at 0, which allows us to add them naturally.</p></div>
+<div class="paragraph"><p>Rather than having a single location, we want to allow for a definition to be
+split across many locations (the body of the definition is then the
+concatenation of all fragment in order of appearance - which is specified by
+the depth first exploration of included files, the ordering of files in command
+line and finally the order we met definitions in a given file)</p></div>
+<div class="ulist"><ul>
+<li>
+<p>
+an identifier (unique for the file its located in) which can be any string:
+</p>
+</li>
+</ul></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@$@<span style="color: #990000">&lt;</span><span style="color: #009900">DefName</span>@<span style="color: #990000">&gt;==</span>@<span style="color: #FF0000">{</span><span style="font-weight: bold"><span style="color: #0000FF">type</span></span> id <span style="color: #990000">=</span> <span style="color: #009900">string</span>@<span style="color: #FF0000">}</span></tt></pre></div></div>
+<div class="ulist"><ul>
+<li>
+<p>
+a flag to tell us if this definition is supposed to be output in a file,
+  with two consequences:
+</p>
+<div class="ulist"><ul>
+<li>
+<p>
+of course, the expanded body of this definition will be written into a
+   file (which name will be the identifier);
+</p>
+</li>
+<li>
+<p>
+and you are not allowed to refer to this definition from another one.
+</p>
+</li>
+</ul></div>
+</li>
+</ul></div>
+<div class="paragraph"><p>The user should be warned about any code fragment that is not, directly or
+indirectly, referenced from an output definition.</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@$@<span style="color: #990000">&lt;</span><span style="color: #009900">DefinitionType</span>@<span style="color: #990000">&gt;==</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
+@<span style="color: #990000">&lt;</span><span style="color: #009900">Location</span>@<span style="color: #990000">&gt;</span>
+@<span style="color: #990000">&lt;</span><span style="color: #009900">DefName</span>@<span style="color: #990000">&gt;</span>
+<span style="font-weight: bold"><span style="color: #0000FF">type</span></span> t <span style="color: #990000">=</span> <span style="color: #FF0000">{</span>  loc <span style="color: #990000">:</span> location <span style="color: #990000">;</span>
+           locs <span style="color: #990000">:</span> location <span style="color: #009900">list</span> <span style="color: #990000">;</span> <span style="font-style: italic"><span style="color: #9A1900">(* reverse order *)</span></span>
+             id <span style="color: #990000">:</span> id <span style="color: #990000">;</span>
+         output <span style="color: #990000">:</span> <span style="color: #009900">bool</span> <span style="color: #FF0000">}</span>
+@<span style="color: #FF0000">}</span></tt></pre></div></div>
+<div class="paragraph"><p>Notice that there are always at least one location (the first one, <code>loc</code>).</p></div>
+<div class="paragraph"><p>It&#8217;s always a good idea to write proper printers for any new type. This may
+looks fastidious but you are actually doing yourself a favor: better have these
+printers ready before they are needed than to have to write them quickly while
+struggling with a bug. Especially when using Batteries which make writing and
+using such printers so easy.</p></div>
+<div class="paragraph"><p>So here they are:</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@$@<span style="color: #990000">&lt;</span><span style="color: #009900">Definitions</span>@<span style="color: #990000">&gt;+=</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> location_print fmt loc <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #000080">Printf</span></span><span style="color: #990000">.</span>fprintf fmt <span style="color: #FF0000">"%s:%d.%d-%d"</span>
+        loc<span style="color: #990000">.</span>file loc<span style="color: #990000">.</span>lineno loc<span style="color: #990000">.</span>colno <span style="color: #990000">(</span>loc<span style="color: #990000">.</span>colno<span style="color: #990000">+</span>loc<span style="color: #990000">.</span>size<span style="color: #990000">)</span>
+
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> mtime_print <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #000080">Float</span></span><span style="color: #990000">.</span>print <span style="font-style: italic"><span style="color: #9A1900">(* TODO: user friendly date&amp;time? *)</span></span>
+
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> print fmt t <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #000080">Printf</span></span><span style="color: #990000">.</span>fprintf fmt <span style="color: #FF0000">"%s.%s@%a"</span>
+        t<span style="color: #990000">.</span>loc<span style="color: #990000">.</span>file t<span style="color: #990000">.</span>id
+        location_print t<span style="color: #990000">.</span>loc
+@<span style="color: #FF0000">}</span></tt></pre></div></div>
+<div class="paragraph"><p>Now obviously we also want to fetch a definition body from its file (checking
+mtime):</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@$@<span style="color: #990000">&lt;</span><span style="color: #009900">Definitions</span>@<span style="color: #990000">&gt;+=</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
+<span style="font-weight: bold"><span style="color: #0000FF">exception</span></span> <span style="color: #009900">FileChanged</span> <span style="font-weight: bold"><span style="color: #0000FF">of</span></span> <span style="color: #009900">string</span>
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> fetch_loc loc <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> <span style="font-weight: bold"><span style="color: #000080">open</span></span> <span style="color: #009900">Unix</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> fname <span style="color: #990000">=</span> loc<span style="color: #990000">.</span>file <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">if</span></span> <span style="color: #990000">(</span>stat fname<span style="color: #990000">).</span>st_mtime <span style="color: #990000">&gt;</span> loc<span style="color: #990000">.</span>mtime <span style="font-weight: bold"><span style="color: #0000FF">then</span></span>
+        raise <span style="color: #990000">(</span><span style="color: #009900">FileChanged</span> fname<span style="color: #990000">)</span> <span style="color: #990000">;</span>
+    read_file fname loc<span style="color: #990000">.</span>offset loc<span style="color: #990000">.</span>size
+@<span style="color: #FF0000">}</span></tt></pre></div></div>
+<div class="paragraph"><p>Then, we will need a way to add definitions to a global registry, and the
+associated lookup function. Definitions are created from a file, offset and
+length (line number and column number are not given and will be computed when
+registering, so that plugins author work is limited to the minimum) and of
+course the identifier for the definition.</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@$@<span style="color: #990000">&lt;</span><span style="color: #009900">Definitions</span>@<span style="color: #990000">&gt;+=</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
+
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> registry <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #000080">Hashtbl</span></span><span style="color: #990000">.</span>create <span style="color: #993399">31</span>
+
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> add id output fname off sz <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> loc <span style="color: #990000">=</span> location_in_file fname off sz <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    <span style="font-weight: bold"><span style="color: #000080">PortiaLog</span></span><span style="color: #990000">.</span>debug <span style="color: #FF0000">"Add definition for %s at position %a\n"</span>
+        id location_print loc <span style="color: #990000">;</span>
+    <span style="font-weight: bold"><span style="color: #000080">Hashtbl</span></span><span style="color: #990000">.</span>modify_opt id <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #0000FF">function</span></span>
+        <span style="color: #990000">|</span> <span style="color: #009900">None</span>   <span style="color: #990000">-&gt;</span> <span style="color: #009900">Some</span> <span style="color: #FF0000">{</span> loc <span style="color: #990000">;</span> id <span style="color: #990000">;</span> output <span style="color: #990000">;</span> locs <span style="color: #990000">=</span> <span style="color: #990000">[]</span> <span style="color: #FF0000">}</span>
+        <span style="color: #990000">|</span> <span style="color: #009900">Some</span> t <span style="color: #990000">-&gt;</span> <span style="color: #009900">Some</span> <span style="color: #FF0000">{</span> t <span style="font-weight: bold"><span style="color: #0000FF">with</span></span> locs <span style="color: #990000">=</span> loc <span style="color: #990000">::</span> t<span style="color: #990000">.</span>locs <span style="color: #FF0000">}</span><span style="color: #990000">)</span>
+        registry
+
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> lookup id <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">try</span></span> <span style="font-weight: bold"><span style="color: #000080">Hashtbl</span></span><span style="color: #990000">.</span>find registry id
+    <span style="font-weight: bold"><span style="color: #0000FF">with</span></span> <span style="color: #009900">Not_found</span> <span style="color: #990000">-&gt;</span> <span style="color: #990000">(</span>
+        <span style="font-weight: bold"><span style="color: #000080">Printf</span></span><span style="color: #990000">.</span>fprintf stderr <span style="color: #FF0000">"Cannot find definition for '%s'\n"</span> id <span style="color: #990000">;</span>
+        exit <span style="color: #993399">1</span>
+    <span style="color: #990000">)</span>
+@<span style="color: #FF0000">}</span></tt></pre></div></div>
+<div class="paragraph"><p>Where location_in_file is responsible to return a correct location
+(up to proper line and column numbers) from the file name, offset
+and size:</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@$@<span style="color: #990000">&lt;</span><span style="color: #009900">LocationInFile</span>@<span style="color: #990000">&gt;==</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> location_in_file file offset size <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> mtime <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #000080">Unix</span></span><span style="color: #990000">.((</span>stat file<span style="color: #990000">).</span>st_mtime<span style="color: #990000">)</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> txt <span style="color: #990000">=</span> read_file file <span style="color: #993399">0</span> offset <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> colno <span style="color: #990000">=</span> colno_at txt
+    <span style="font-weight: bold"><span style="color: #0000FF">and</span></span> lineno <span style="color: #990000">=</span> lineno_at offset txt <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    <span style="color: #FF0000">{</span> file <span style="color: #990000">;</span> offset <span style="color: #990000">;</span> size <span style="color: #990000">;</span> mtime <span style="color: #990000">;</span> lineno <span style="color: #990000">;</span> colno <span style="color: #FF0000">}</span>
+@<span style="color: #FF0000">}</span></tt></pre></div></div>
+<div class="paragraph"><p>Now the last part: expansion. Given a function PortiaConfig.find_references
+(supplied by the configuration) that&#8217;s able to spot all expansion points from a
+non expanded body, and the registry of all known definitions, let&#8217;s build a
+function that will return the complete expanded body (or signal a problem).</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@$@<span style="color: #990000">&lt;</span><span style="color: #009900">Definitions</span>@<span style="color: #990000">&gt;+=</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> <span style="font-weight: bold"><span style="color: #0000FF">rec</span></span> expanded_loc tab loc <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> unexpanded <span style="color: #990000">=</span> fetch_loc loc <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    <span style="font-weight: bold"><span style="color: #000080">PortiaLog</span></span><span style="color: #990000">.</span>debug <span style="color: #FF0000">"expand '%s'\n"</span> unexpanded <span style="color: #990000">;</span>
+    <span style="font-style: italic"><span style="color: #9A1900">(* find_references returns a list of (id, start_offset, stop_offset) *)</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> refs <span style="color: #990000">=</span> <span style="color: #990000">!</span><span style="font-weight: bold"><span style="color: #000080">PortiaConfig</span></span><span style="color: #990000">.</span>find_references unexpanded <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    <span style="font-style: italic"><span style="color: #9A1900">(* TODO: sort this list according to start_offset *)</span></span>
+    <span style="font-weight: bold"><span style="color: #000080">PortiaLog</span></span><span style="color: #990000">.</span>debug <span style="color: #FF0000">"found references: %a\n"</span>
+        <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #000080">List</span></span><span style="color: #990000">.</span>print <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #000080">Tuple3</span></span><span style="color: #990000">.</span>print <span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>print <span style="font-weight: bold"><span style="color: #000080">Int</span></span><span style="color: #990000">.</span>print <span style="font-weight: bold"><span style="color: #000080">Int</span></span><span style="color: #990000">.</span>print<span style="color: #990000">))</span> refs <span style="color: #990000">;</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> txt<span style="color: #990000">,</span> last_stop <span style="color: #990000">=</span>
+        <span style="font-weight: bold"><span style="color: #000080">List</span></span><span style="color: #990000">.</span>fold_left <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #0000FF">fun</span></span> <span style="color: #990000">(</span>txt<span style="color: #990000">,</span>last_stop<span style="color: #990000">)</span> <span style="color: #990000">(</span>id<span style="color: #990000">,</span>start<span style="color: #990000">,</span>stop<span style="color: #990000">)</span> <span style="color: #990000">-&gt;</span>
+            <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> t' <span style="color: #990000">=</span> lookup id <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+            <span style="font-weight: bold"><span style="color: #0000FF">assert</span></span> <span style="color: #990000">(</span>start <span style="color: #990000">&gt;=</span> last_stop<span style="color: #990000">)</span> <span style="color: #990000">;</span>
+            <span style="font-style: italic"><span style="color: #9A1900">(* Warning: this will indent string literals! *)</span></span>
+            <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> txt <span style="color: #990000">=</span> txt <span style="color: #990000">^</span>
+                indent tab
+                       <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>sub unexpanded last_stop <span style="color: #990000">(</span>start <span style="color: #990000">-</span> last_stop<span style="color: #990000">))</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+            <span style="font-style: italic"><span style="color: #9A1900">(* Look for last \n in txt to know how to indent sub-definitions: *)</span></span>
+            <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> txt_pre_nl<span style="color: #990000">,</span> tab' <span style="color: #990000">=</span>
+                <span style="font-weight: bold"><span style="color: #0000FF">try</span></span> <span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>rsplit txt <span style="color: #990000">~</span>by<span style="color: #990000">:</span><span style="color: #FF0000">"\n"</span>
+                <span style="font-weight: bold"><span style="color: #0000FF">with</span></span> <span style="color: #009900">Not_found</span> <span style="color: #990000">-&gt;</span> txt<span style="color: #990000">,</span> <span style="color: #FF0000">""</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+            <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> txt <span style="color: #990000">=</span> txt_pre_nl <span style="color: #990000">^</span> <span style="color: #FF0000">"\n"</span> <span style="color: #990000">^</span> <span style="color: #990000">(</span>expanded_body tab' t'<span style="color: #990000">)</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+            <span style="font-style: italic"><span style="color: #9A1900">(* add a linenum indication that we are back in this block *)</span></span>
+            <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> ln <span style="color: #990000">=</span> <span style="color: #990000">!</span><span style="font-weight: bold"><span style="color: #000080">PortiaConfig</span></span><span style="color: #990000">.</span>linenum
+                         <span style="color: #990000">(</span>loc<span style="color: #990000">.</span>lineno <span style="color: #990000">+</span> <span style="color: #990000">(</span>lineno_at stop unexpanded<span style="color: #990000">))</span>
+                         loc<span style="color: #990000">.</span>file <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+            txt <span style="color: #990000">^</span>
+            <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #0000FF">if</span></span> <span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>length ln <span style="color: #990000">&gt;</span> <span style="color: #993399">0</span> <span style="color: #990000">&amp;&amp;</span>
+                <span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>length txt <span style="color: #990000">&gt;</span> <span style="color: #993399">0</span> <span style="color: #990000">&amp;&amp;</span>
+                txt<span style="color: #990000">.[</span><span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>length txt <span style="color: #990000">-</span> <span style="color: #993399">1</span><span style="color: #990000">]</span> <span style="color: #990000">!=</span> '<span style="color: #990000">\</span>n' <span style="font-weight: bold"><span style="color: #0000FF">then</span></span>
+                <span style="color: #FF0000">"\n"</span> <span style="font-weight: bold"><span style="color: #0000FF">else</span></span> <span style="color: #FF0000">""</span><span style="color: #990000">)</span> <span style="color: #990000">^</span>
+            ln<span style="color: #990000">,</span> stop<span style="color: #990000">)</span>
+            <span style="color: #990000">(</span><span style="color: #FF0000">""</span><span style="color: #990000">,</span> <span style="color: #993399">0</span><span style="color: #990000">)</span> refs <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    <span style="font-style: italic"><span style="color: #9A1900">(* Complete with what's left *)</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> rest <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>length unexpanded <span style="color: #990000">-</span> last_stop <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> txt <span style="color: #990000">=</span> txt <span style="color: #990000">^</span>
+        indent tab <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>sub unexpanded last_stop rest<span style="color: #990000">)</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    <span style="font-style: italic"><span style="color: #9A1900">(* Add line number information. *)</span></span>
+    <span style="color: #990000">!</span><span style="font-weight: bold"><span style="color: #000080">PortiaConfig</span></span><span style="color: #990000">.</span>linenum loc<span style="color: #990000">.</span>lineno loc<span style="color: #990000">.</span>file <span style="color: #990000">^</span> txt
+
+<span style="font-weight: bold"><span style="color: #0000FF">and</span></span> expanded_body tab t <span style="color: #990000">=</span>
+    t<span style="color: #990000">.</span>loc <span style="color: #990000">::</span> <span style="font-weight: bold"><span style="color: #000080">List</span></span><span style="color: #990000">.</span>rev t<span style="color: #990000">.</span>locs <span style="color: #990000">|&gt;</span>
+    <span style="font-weight: bold"><span style="color: #000080">List</span></span><span style="color: #990000">.</span>map <span style="color: #990000">(</span>expanded_loc tab<span style="color: #990000">)</span> <span style="color: #990000">|&gt;</span>
+    <span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>concat <span style="color: #FF0000">""</span>
+@<span style="color: #FF0000">}</span></tt></pre></div></div>
+<div class="paragraph"><p>Where each substituted definition is properly indented according to its
+insertion point. We must now complete this module with the functions
+we used up to here for helping dealing with text files and locations:</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@$@<span style="color: #990000">&lt;</span><span style="color: #009900">TxtHelpers</span>@<span style="color: #990000">&gt;==</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> indent <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> spaces n <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>make n ' ' <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> <span style="font-weight: bold"><span style="color: #000080">open</span></span> <span style="color: #009900">Str</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> re <span style="color: #990000">=</span> regexp <span style="color: #FF0000">"\n\\([^\n]\\)"</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">fun</span></span> tab str <span style="color: #990000">-&gt;</span>
+        <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> tab' <span style="color: #990000">=</span> spaces <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>length tab<span style="color: #990000">)</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+        tab <span style="color: #990000">^</span> global_replace re <span style="color: #990000">(</span><span style="color: #FF0000">"\n"</span><span style="color: #990000">^</span> tab' <span style="color: #990000">^</span><span style="color: #FF0000">"\\1"</span><span style="color: #990000">)</span> str
+
+<span style="font-style: italic"><span style="color: #9A1900">(* first char is at column 0 *)</span></span>
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> colno_at txt <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> <span style="font-weight: bold"><span style="color: #0000FF">rec</span></span> aux colno p <span style="color: #990000">=</span>
+        <span style="font-weight: bold"><span style="color: #0000FF">if</span></span> p <span style="color: #990000">=</span> <span style="color: #993399">0</span> <span style="color: #990000">||</span> txt<span style="color: #990000">.[</span>p<span style="color: #990000">-</span><span style="color: #993399">1</span><span style="color: #990000">]</span> <span style="color: #990000">=</span> '<span style="color: #990000">\</span>n' <span style="font-weight: bold"><span style="color: #0000FF">then</span></span> colno <span style="font-weight: bold"><span style="color: #0000FF">else</span></span>
+        aux <span style="color: #990000">(</span>colno<span style="color: #990000">+</span><span style="color: #993399">1</span><span style="color: #990000">)</span> <span style="color: #990000">(</span>p<span style="color: #990000">-</span><span style="color: #993399">1</span><span style="color: #990000">)</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    aux <span style="color: #993399">0</span> <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>length txt<span style="color: #990000">)</span>
+
+<span style="font-style: italic"><span style="color: #9A1900">(* first line is 0 *)</span></span>
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> lineno_at pos txt <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> <span style="font-weight: bold"><span style="color: #0000FF">rec</span></span> aux p n <span style="color: #990000">=</span>
+        <span style="font-weight: bold"><span style="color: #0000FF">if</span></span> p <span style="color: #990000">&gt;=</span> pos <span style="font-weight: bold"><span style="color: #0000FF">then</span></span> n <span style="font-weight: bold"><span style="color: #0000FF">else</span></span>
+        aux <span style="color: #990000">(</span>p<span style="color: #990000">+</span><span style="color: #993399">1</span><span style="color: #990000">)</span> <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #0000FF">if</span></span> txt<span style="color: #990000">.[</span>p<span style="color: #990000">]</span> <span style="color: #990000">=</span> '<span style="color: #990000">\</span>n' <span style="font-weight: bold"><span style="color: #0000FF">then</span></span> n<span style="color: #990000">+</span><span style="color: #993399">1</span> <span style="font-weight: bold"><span style="color: #0000FF">else</span></span> n<span style="color: #990000">)</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    aux <span style="color: #993399">0</span> <span style="color: #993399">0</span>
+
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> read_file fname offset size <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> <span style="font-weight: bold"><span style="color: #000080">open</span></span> <span style="color: #009900">Unix</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> fd <span style="color: #990000">=</span> openfile fname <span style="color: #990000">[</span><span style="color: #009900">O_RDONLY</span><span style="color: #990000">]</span> <span style="color: #993399">0</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    lseek fd offset <span style="color: #009900">SEEK_SET</span> <span style="color: #990000">|&gt;</span> ignore <span style="color: #990000">;</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> str <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>create size <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> act_sz <span style="color: #990000">=</span> read fd str <span style="color: #993399">0</span> size <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    close fd <span style="color: #990000">;</span>
+    <span style="font-style: italic"><span style="color: #9A1900">(* no short read on ordinary files *)</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">assert</span></span> <span style="color: #990000">(</span>act_sz <span style="color: #990000">=</span> size<span style="color: #990000">)</span> <span style="color: #990000">;</span>
+    str
+@<span style="color: #FF0000">}</span></tt></pre></div></div>
+<div class="paragraph"><p>Regarding linenum, this function depends on the programming language
+used. The default implementation from Config will not output linenum
+directives. But dedicated plugins are easy to write. First, for
+ocaml:</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@<span style="color: #009900">O</span>@<span style="color: #990000">&lt;</span>ocaml<span style="color: #990000">.</span>ml@<span style="color: #990000">&gt;==</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> linenum lineno fname <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #000080">Printf</span></span><span style="color: #990000">.</span>sprintf <span style="color: #FF0000">"# %d \"%s\"\n"</span> <span style="color: #990000">(</span>lineno<span style="color: #990000">+</span><span style="color: #993399">1</span><span style="color: #990000">)</span> fname
+
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> <span style="color: #990000">()</span> <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #000080">PortiaConfig</span></span><span style="color: #990000">.</span>linenum <span style="color: #990000">:=</span> linenum
+@<span style="color: #FF0000">}</span></tt></pre></div></div>
+<div class="paragraph"><p>and for C:</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@<span style="color: #009900">O</span>@<span style="color: #990000">&lt;</span>c<span style="color: #990000">.</span>ml@<span style="color: #990000">&gt;==</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> linenum lineno fname <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #000080">Printf</span></span><span style="color: #990000">.</span>sprintf <span style="color: #FF0000">"#line %d \"%s\"\n"</span> <span style="color: #990000">(</span>lineno<span style="color: #990000">+</span><span style="color: #993399">1</span><span style="color: #990000">)</span> fname
+
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> <span style="color: #990000">()</span> <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #000080">PortiaConfig</span></span><span style="color: #990000">.</span>linenum <span style="color: #990000">:=</span> linenum
+@<span style="color: #FF0000">}</span></tt></pre></div></div>
+<div class="paragraph"><p>Notice that those directives follow the GNU convention that:</p></div>
+<div class="literalblock">
+<div class="content">
+<pre><code>Line numbers should start from 1 at the beginning of the file, and column
+numbers should start from 1 at the beginning of the line.</code></pre>
+</div></div>
+<div class="paragraph"><p>One more word about the linenum directive in OCaml. It is documented in the
+chapter 6.1 (lexical conventions) of the OCaml manual, and from this
+documentation it appears that it is not constrained to appear alone on a line.
+We do make some effort to place these directives on dedicated lines, in order
+to generate better looking source files.</p></div>
+<div class="paragraph"><p>Also, notice that we must insert a linenum directive at the insertion point of
+each definition body and after each expansion to return to previous location.</p></div>
+<div class="paragraph"><p>With these functions we are now ready to start the real job of parsing input
+files(s) and writing output definitions.</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@<span style="color: #009900">O</span>@<span style="color: #990000">&lt;</span>portiaDefinition<span style="color: #990000">.</span>ml@<span style="color: #990000">&gt;==</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
+<span style="font-weight: bold"><span style="color: #000080">open</span></span> <span style="color: #009900">Batteries</span>
+
+@<span style="color: #990000">&lt;</span><span style="color: #009900">DefinitionType</span>@<span style="color: #990000">&gt;</span>
+@<span style="color: #990000">&lt;</span><span style="color: #009900">TxtHelpers</span>@<span style="color: #990000">&gt;</span>
+@<span style="color: #990000">&lt;</span><span style="color: #009900">LocationInFile</span>@<span style="color: #990000">&gt;</span>
+@<span style="color: #990000">&lt;</span><span style="color: #009900">Definitions</span>@<span style="color: #990000">&gt;</span>
+@<span style="color: #FF0000">}</span></tt></pre></div></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_parsing">5. Parsing</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Parsing is a pretentious appellation, since we merely need to spot three things
+in the input files:</p></div>
+<div class="ulist"><ul>
+<li>
+<p>
+optional include command (with its filename parameter) to instruct us
+how to gather other file names to inspect;
+</p>
+</li>
+<li>
+<p>
+code definitions;
+</p>
+</li>
+<li>
+<p>
+in the body of a definition, references to other definitions.
+</p>
+</li>
+</ul></div>
+<div class="paragraph"><p>For now we do not want to impose any format to these marks so in all
+generality we are going to read in memory a whole file and ask a configuration
+provided function to return the list of additional files to scan and the list
+of definitions that can be found in the file content.</p></div>
+<div class="paragraph"><p>So "parsing" is just:</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@$@<span style="color: #990000">&lt;</span><span style="color: #009900">Parsing</span>@<span style="color: #990000">&gt;==</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> read_whole_file file <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> ic <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #000080">Unix</span></span><span style="color: #990000">.(</span>openfile file <span style="color: #990000">[</span><span style="color: #009900">O_RDONLY</span><span style="color: #990000">]</span> <span style="color: #993399">0</span> <span style="color: #990000">|&gt;</span> input_of_descr<span style="color: #990000">)</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    <span style="font-weight: bold"><span style="color: #000080">IO</span></span><span style="color: #990000">.</span>read_all ic <span style="font-style: italic"><span style="color: #9A1900">(* autoclosed *)</span></span>
+
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> <span style="font-weight: bold"><span style="color: #0000FF">rec</span></span> parse file <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #000080">PortiaLog</span></span><span style="color: #990000">.</span>debug <span style="color: #FF0000">"Parsing file %s\n"</span> file <span style="color: #990000">;</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> txt <span style="color: #990000">=</span> read_whole_file file <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    <span style="color: #990000">!</span><span style="font-weight: bold"><span style="color: #000080">PortiaConfig</span></span><span style="color: #990000">.</span>find_definitions txt <span style="color: #990000">|&gt;</span>
+    <span style="font-weight: bold"><span style="color: #000080">List</span></span><span style="color: #990000">.</span>iter <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #0000FF">fun</span></span> <span style="color: #990000">(</span>id<span style="color: #990000">,</span> output<span style="color: #990000">,</span> start<span style="color: #990000">,</span> stop<span style="color: #990000">)</span> <span style="color: #990000">-&gt;</span>
+        <span style="font-weight: bold"><span style="color: #000080">PortiaDefinition</span></span><span style="color: #990000">.</span>add id output file start <span style="color: #990000">(</span>stop<span style="color: #990000">-</span>start<span style="color: #990000">))</span> <span style="color: #990000">;</span>
+    <span style="color: #990000">!</span><span style="font-weight: bold"><span style="color: #000080">PortiaConfig</span></span><span style="color: #990000">.</span>find_inclusions txt <span style="color: #990000">|&gt;</span>
+    <span style="font-weight: bold"><span style="color: #000080">List</span></span><span style="color: #990000">.</span>iter parse
+@<span style="color: #FF0000">}</span></tt></pre></div></div>
+<div class="paragraph"><p>That we can group, with some helper functions to be defined later, in a parse
+module:</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@<span style="color: #009900">O</span>@<span style="color: #990000">&lt;</span>portiaParse<span style="color: #990000">.</span>ml@<span style="color: #990000">&gt;==</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
+<span style="font-weight: bold"><span style="color: #000080">open</span></span> <span style="color: #009900">Batteries</span>
+
+@<span style="color: #990000">&lt;</span><span style="color: #009900">Parsing</span>@<span style="color: #990000">&gt;</span>
+@<span style="color: #990000">&lt;</span><span style="color: #009900">ParsingHelpers</span>@<span style="color: #990000">&gt;</span>
+@<span style="color: #FF0000">}</span></tt></pre></div></div>
+<div class="paragraph"><p>Also, we want to be able to attach several code fragments to the same name
+(see R8), with the actual expansion being composed of the concatenation of
+these fragments.  To handle this, we will merely register several definitions
+with the same name, and when writing the output of a given definition we will
+append all bodies in order of appearance.</p></div>
+<div class="sect2">
+<h3 id="_funnelweb">5.1. FunnelWeb</h3>
+<div class="paragraph"><p>Now of course the real difficulty lies in the <code>find_definitions</code> and
+<code>find_inclusions</code> functions, which by default could be the one we need to
+bootstrap (ie. funnelweb compatible).</p></div>
+<div class="paragraph"><p>So let&#8217;s implement at first the simpler of both. For inclusion, funnelweb uses
+a very straightforward syntax: a line consisting only of <code>@i somefilename</code>.
+This simple regular expressions will easily collect all such commands for us:</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@$@<span style="color: #990000">&lt;</span><span style="color: #009900">RegexForInclusion</span>@<span style="color: #990000">&gt;==</span>@<span style="color: #FF0000">{</span><span style="color: #FF0000">"^@i +\\(.+\\) *$"</span>@<span style="color: #FF0000">}</span></tt></pre></div></div>
+<div class="paragraph"><p>Which leads to this <code>find_inclusions</code> function:</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@$@<span style="color: #990000">&lt;</span><span style="color: #009900">FW_FindInclusions</span>@<span style="color: #990000">&gt;==</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> find_inclusions <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> re <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #000080">Str</span></span><span style="color: #990000">.</span>regexp @<span style="color: #990000">&lt;</span><span style="color: #009900">RegexForInclusion</span>@<span style="color: #990000">&gt;</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    fold_all_groups <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #0000FF">fun</span></span> l p <span style="color: #990000">-&gt;</span> <span style="font-weight: bold"><span style="color: #0000FF">match</span></span> l <span style="font-weight: bold"><span style="color: #0000FF">with</span></span>
+        <span style="color: #990000">|</span> <span style="color: #990000">[</span><span style="color: #009900">Some</span> <span style="color: #990000">(</span>f<span style="color: #990000">,</span> _<span style="color: #990000">,</span> _<span style="color: #990000">)]</span> <span style="color: #990000">-&gt;</span> f<span style="color: #990000">::</span>p
+        <span style="color: #990000">|</span> _ <span style="color: #990000">-&gt;</span> <span style="font-weight: bold"><span style="color: #0000FF">assert</span></span> <span style="font-weight: bold"><span style="color: #0000FF">false</span></span><span style="color: #990000">)</span> <span style="color: #990000">[]</span> re
+@<span style="color: #FF0000">}</span></tt></pre></div></div>
+<div class="paragraph"><p>With the almighty <code>fold_all_groups</code>, folding over all groups matched in a given
+string:</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@$@<span style="color: #990000">&lt;</span><span style="color: #009900">ParsingHelpers</span>@<span style="color: #990000">&gt;==</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> fold_all_groups f p re str <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> <span style="font-weight: bold"><span style="color: #000080">open</span></span> <span style="color: #009900">Str</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> <span style="font-weight: bold"><span style="color: #0000FF">rec</span></span> aux p o <span style="color: #990000">=</span>
+        <span style="font-weight: bold"><span style="color: #0000FF">try</span></span> search_forward re str o <span style="color: #990000">|&gt;</span> ignore <span style="color: #990000">;</span>
+            <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> <span style="font-weight: bold"><span style="color: #0000FF">rec</span></span> fetch_grps n groups <span style="color: #990000">=</span>
+                <span style="font-weight: bold"><span style="color: #0000FF">try</span></span> <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> g <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #0000FF">try</span></span> <span style="color: #009900">Some</span> <span style="color: #990000">(</span>matched_group n str<span style="color: #990000">,</span>
+                                      group_beginning n<span style="color: #990000">,</span>
+                                      group_end n<span style="color: #990000">)</span>
+                            <span style="font-weight: bold"><span style="color: #0000FF">with</span></span> <span style="color: #009900">Not_found</span> <span style="color: #990000">-&gt;</span> <span style="color: #009900">None</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+                    fetch_grps <span style="color: #990000">(</span>n<span style="color: #990000">+</span><span style="color: #993399">1</span><span style="color: #990000">)</span> <span style="color: #990000">(</span>g<span style="color: #990000">::</span>groups<span style="color: #990000">)</span>
+                <span style="font-weight: bold"><span style="color: #0000FF">with</span></span> <span style="color: #009900">Invalid_argument</span> _ <span style="color: #990000">-&gt;</span> <span style="font-weight: bold"><span style="color: #000080">List</span></span><span style="color: #990000">.</span>rev groups <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+            <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> groups <span style="color: #990000">=</span> fetch_grps <span style="color: #993399">1</span> <span style="color: #990000">[]</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+            aux <span style="color: #990000">(</span>f groups p<span style="color: #990000">)</span> <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #000080">Str</span></span><span style="color: #990000">.</span>match_end <span style="color: #990000">())</span>
+        <span style="font-weight: bold"><span style="color: #0000FF">with</span></span> <span style="color: #009900">Not_found</span> <span style="color: #990000">-&gt;</span>
+            p <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    aux p <span style="color: #993399">0</span> <span style="color: #990000">|&gt;</span> <span style="font-weight: bold"><span style="color: #000080">List</span></span><span style="color: #990000">.</span>rev
+@<span style="color: #FF0000">}</span></tt></pre></div></div>
+<div class="paragraph"><p>Regarding code definitions, the regular expression is more complex but can
+still handle the job. We have to take greater care here since code blocks
+typically spans several lines and regular expressions are greedy. We handle
+this by forbidding the ending marker (<em>@</em> followed by <em>}</em>) from the definition;
+hopefully this marker is both improbable and short.</p></div>
+<div class="paragraph"><p>We end up with this regular expression:</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@$@<span style="color: #990000">&lt;</span><span style="color: #009900">RegexForDefinition</span>@<span style="color: #990000">&gt;==</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
+"<span style="color: #990000">^</span>@<span style="color: #990000">\\(\\</span>$<span style="color: #990000">\\|</span><span style="color: #009900">O</span><span style="color: #990000">\\)</span>@<span style="color: #990000">&lt;\\([^</span>@<span style="color: #990000">]+\\)</span>@<span style="color: #990000">&gt;\\(==\\|\\+=\\)</span>@<span style="color: #FF0000">{</span><span style="color: #990000">\</span>
+<span style="color: #990000">\\(</span>@<span style="color: #990000">-\</span>n<span style="color: #990000">\\)?\\(\\([^</span>@<span style="color: #990000">]\\|</span>@<span style="color: #990000">[^</span><span style="color: #FF0000">}</span><span style="color: #990000">]\\)*\\)</span>@<span style="color: #FF0000">}</span>"@<span style="color: #FF0000">}</span></tt></pre></div></div>
+<div class="paragraph"><p>Here we met another difficulty: we must be able to write strings and regular
+expressions that describes funnelweb special commands without triggering
+funnelweb (nor portia in funnelweb mode) to interpret them as actual commands!
+In other words we must write a regular expression that does not match itself.
+The easy trick is to split the regular expression into several lines right in
+the middle of problematic token sequences.</p></div>
+<div class="paragraph"><p>With the corresponding <code>find_definitions</code>:</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@$@<span style="color: #990000">&lt;</span><span style="color: #009900">FW_FindDefinitions</span>@<span style="color: #990000">&gt;==</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> find_definitions <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> re <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #000080">Str</span></span><span style="color: #990000">.</span>regexp @<span style="color: #990000">&lt;</span><span style="color: #009900">RegexForDefinition</span>@<span style="color: #990000">&gt;</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    fold_all_groups <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #0000FF">fun</span></span> l p <span style="color: #990000">-&gt;</span>
+        <span style="font-weight: bold"><span style="color: #000080">PortiaLog</span></span><span style="color: #990000">.</span>debug <span style="color: #FF0000">"found def: %a\n"</span>
+            <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #000080">List</span></span><span style="color: #990000">.</span>print <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #000080">Option</span></span><span style="color: #990000">.</span>print
+                <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #000080">Tuple3</span></span><span style="color: #990000">.</span>print <span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>print <span style="font-weight: bold"><span style="color: #000080">Int</span></span><span style="color: #990000">.</span>print <span style="font-weight: bold"><span style="color: #000080">Int</span></span><span style="color: #990000">.</span>print<span style="color: #990000">)))</span> l <span style="color: #990000">;</span>
+        <span style="font-weight: bold"><span style="color: #0000FF">match</span></span> l <span style="font-weight: bold"><span style="color: #0000FF">with</span></span>
+        <span style="color: #990000">|</span> <span style="color: #990000">[</span><span style="color: #009900">Some</span> <span style="color: #990000">(</span>c<span style="color: #990000">,</span> _<span style="color: #990000">,</span> _<span style="color: #990000">);</span> <span style="color: #009900">Some</span> <span style="color: #990000">(</span>id<span style="color: #990000">,</span> _<span style="color: #990000">,</span> _<span style="color: #990000">);</span> _<span style="color: #990000">;</span> _<span style="color: #990000">;</span> <span style="color: #009900">Some</span> <span style="color: #990000">(</span>_<span style="color: #990000">,</span> start<span style="color: #990000">,</span> stop<span style="color: #990000">);</span> _<span style="color: #990000">]</span> <span style="color: #990000">-&gt;</span>
+            <span style="color: #990000">(</span>id<span style="color: #990000">,</span> c <span style="color: #990000">=</span> <span style="color: #FF0000">"O"</span><span style="color: #990000">,</span> start<span style="color: #990000">,</span> stop<span style="color: #990000">)</span> <span style="color: #990000">::</span> p
+        <span style="color: #990000">|</span> _ <span style="color: #990000">-&gt;</span> <span style="font-weight: bold"><span style="color: #0000FF">assert</span></span> <span style="font-weight: bold"><span style="color: #0000FF">false</span></span><span style="color: #990000">)</span> <span style="color: #990000">[]</span> re
+@<span style="color: #FF0000">}</span></tt></pre></div></div>
+<div class="paragraph"><p>Now to finish with our regular expressions, we must be able to spot references
+to other definitions from within definition bodies. Funnelweb uses a
+straightforward syntax for that, again relying on the unlikelihood of the
+(short) sequence of <em>@</em> followed by <em>&lt;</em> or <em>&gt;</em>:</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@$@<span style="color: #990000">&lt;</span><span style="color: #009900">RegexForReference</span>@<span style="color: #990000">&gt;==</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
+<span style="color: #FF0000">"\\(@&lt;\\([^@]+\\)@&gt;\\)"</span>@<span style="color: #FF0000">}</span></tt></pre></div></div>
+<div class="paragraph"><p>With the corresponding <code>find_references</code> (identical to <code>find_inclusions</code> but
+with another regular expression):</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@$@<span style="color: #990000">&lt;</span><span style="color: #009900">FW_FindReferences</span>@<span style="color: #990000">&gt;==</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> find_references <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> re <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #000080">Str</span></span><span style="color: #990000">.</span>regexp @<span style="color: #990000">&lt;</span><span style="color: #009900">RegexForReference</span>@<span style="color: #990000">&gt;</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    fold_all_groups <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #0000FF">fun</span></span> l p <span style="color: #990000">-&gt;</span> <span style="font-weight: bold"><span style="color: #0000FF">match</span></span> l <span style="font-weight: bold"><span style="color: #0000FF">with</span></span>
+        <span style="color: #990000">|</span> <span style="color: #990000">[</span><span style="color: #009900">Some</span> <span style="color: #990000">(</span>_<span style="color: #990000">,</span> start<span style="color: #990000">,</span> stop<span style="color: #990000">);</span> <span style="color: #009900">Some</span> <span style="color: #990000">(</span>id<span style="color: #990000">,</span> _<span style="color: #990000">,</span> _<span style="color: #990000">)]</span> <span style="color: #990000">-&gt;</span> <span style="color: #990000">(</span>id<span style="color: #990000">,</span> start<span style="color: #990000">,</span> stop<span style="color: #990000">)::</span>p
+        <span style="color: #990000">|</span> _ <span style="color: #990000">-&gt;</span> <span style="font-weight: bold"><span style="color: #0000FF">assert</span></span> <span style="font-weight: bold"><span style="color: #0000FF">false</span></span><span style="color: #990000">)</span> <span style="color: #990000">[]</span> re
+@<span style="color: #FF0000">}</span></tt></pre></div></div>
+<div class="paragraph"><p>This function will be used later when untangling code fragments into output
+files.</p></div>
+<div class="paragraph"><p>Last and least, funnelweb (and probably other literate programming
+preprocessors as well) uses an escape character that can be used to include its
+control character (<em>@</em>) in the source code. Thus, before outputting the code
+we must run a final scan to unquote all these characters, especially since we
+have made a heavy use of this quoting mechanism in this document:</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@$@<span style="color: #990000">&lt;</span><span style="color: #009900">FW_Postprocess</span>@<span style="color: #990000">&gt;==</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> postprocess str <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>nreplace <span style="color: #990000">~</span>str <span style="color: #990000">~</span>sub<span style="color: #990000">:</span><span style="color: #FF0000">"@@"</span> <span style="color: #990000">~</span>by<span style="color: #990000">:</span><span style="color: #FF0000">"@"</span>
+@<span style="color: #FF0000">}</span></tt></pre></div></div>
+<div class="paragraph"><p>Of course, all these regular expressions and substring replacement do not add
+up to a proper parser for funnelweb syntax, which is much richer than that.
+It&#8217;s enough, though, to bootstrap Portia source code, so we will leave this
+funnelweb module here and return to the more interesting topic of generating
+output files.</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@<span style="color: #009900">O</span>@<span style="color: #990000">&lt;</span>funnelweb<span style="color: #990000">.</span>ml@<span style="color: #990000">&gt;==</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
+<span style="font-weight: bold"><span style="color: #000080">open</span></span> <span style="color: #009900">Batteries</span>
+<span style="font-weight: bold"><span style="color: #000080">open</span></span> <span style="color: #009900">PortiaParse</span>
+
+@<span style="color: #990000">&lt;</span><span style="color: #009900">FW_FindInclusions</span>@<span style="color: #990000">&gt;</span>
+@<span style="color: #990000">&lt;</span><span style="color: #009900">FW_FindDefinitions</span>@<span style="color: #990000">&gt;</span>
+@<span style="color: #990000">&lt;</span><span style="color: #009900">FW_FindReferences</span>@<span style="color: #990000">&gt;</span>
+@<span style="color: #990000">&lt;</span><span style="color: #009900">FW_Postprocess</span>@<span style="color: #990000">&gt;</span>
+
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> <span style="color: #990000">()</span> <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #000080">PortiaConfig</span></span><span style="color: #990000">.</span>find_definitions <span style="color: #990000">:=</span> find_definitions <span style="color: #990000">;</span>
+    <span style="font-weight: bold"><span style="color: #000080">PortiaConfig</span></span><span style="color: #990000">.</span>find_references  <span style="color: #990000">:=</span> find_references <span style="color: #990000">;</span>
+    <span style="font-weight: bold"><span style="color: #000080">PortiaConfig</span></span><span style="color: #990000">.</span>find_inclusions  <span style="color: #990000">:=</span> find_inclusions <span style="color: #990000">;</span>
+    <span style="font-weight: bold"><span style="color: #000080">PortiaConfig</span></span><span style="color: #990000">.</span>postprocess      <span style="color: #990000">:=</span> postprocess
+@<span style="color: #FF0000">}</span></tt></pre></div></div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_output">6. Output</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Once all definitions have been registered we can iterate over all which must be
+output into a file, retrieve its expanded body then write it into the file:</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@$@<span style="color: #990000">&lt;</span><span style="color: #009900">Output</span>@<span style="color: #990000">&gt;==</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
+<span style="font-weight: bold"><span style="color: #000080">open</span></span> <span style="color: #009900">PortiaDefinition</span>
+
+<span style="font-style: italic"><span style="color: #9A1900">(* output a given definition *)</span></span>
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> definition filename def <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">if</span></span> def<span style="color: #990000">.</span>output <span style="font-weight: bold"><span style="color: #0000FF">then</span></span> <span style="color: #990000">(</span>
+        <span style="font-weight: bold"><span style="color: #000080">PortiaLog</span></span><span style="color: #990000">.</span>debug <span style="color: #FF0000">"Generating %s...\n%!"</span> filename <span style="color: #990000">;</span>
+        <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> text <span style="color: #990000">=</span> expanded_body <span style="color: #FF0000">""</span> def <span style="color: #990000">|&gt;</span>
+                   <span style="color: #990000">!</span><span style="font-weight: bold"><span style="color: #000080">PortiaConfig</span></span><span style="color: #990000">.</span>postprocess <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+        output_file <span style="color: #990000">~</span>filename <span style="color: #990000">~</span>text
+    <span style="color: #990000">)</span> <span style="font-weight: bold"><span style="color: #0000FF">else</span></span> <span style="color: #990000">(</span>
+        <span style="font-weight: bold"><span style="color: #000080">PortiaLog</span></span><span style="color: #990000">.</span>debug <span style="color: #FF0000">"No output file for %s\n%!"</span> filename
+    <span style="color: #990000">)</span>
+
+<span style="font-style: italic"><span style="color: #9A1900">(* output all registered definitions *)</span></span>
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> all <span style="color: #990000">()</span> <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #000080">Hashtbl</span></span><span style="color: #990000">.</span>iter definition registry
+@<span style="color: #FF0000">}</span></tt></pre></div></div>
+<div class="paragraph"><p>And that&#8217;s all we need in our Output module:</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@<span style="color: #009900">O</span>@<span style="color: #990000">&lt;</span>output<span style="color: #990000">.</span>ml@<span style="color: #990000">&gt;==</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
+<span style="font-weight: bold"><span style="color: #000080">open</span></span> <span style="color: #009900">Batteries</span>
+
+@<span style="color: #990000">&lt;</span><span style="color: #009900">Output</span>@<span style="color: #990000">&gt;</span>
+@<span style="color: #FF0000">}</span></tt></pre></div></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_configuration">7. Configuration</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>We have seen so far only five parameters taken from the configuration, the
+first three being references to functions taking a file content as a string and
+returning substrings of interest:</p></div>
+<div class="ulist"><ul>
+<li>
+<p>
+<code>find_definitions</code>, that spots new definitions
+</p>
+</li>
+<li>
+<p>
+<code>find_references</code>, that spots references to definitions in definition bodies
+</p>
+</li>
+<li>
+<p>
+<code>find_inclusions</code>, that spots declarations of other files to parse
+</p>
+</li>
+</ul></div>
+<div class="paragraph"><p>and the others being simpler function to post-process or beautify the output:</p></div>
+<div class="ulist"><ul>
+<li>
+<p>
+<code>postprocess</code>, that perform whatever modification is required on the expanded
+  code
+</p>
+</li>
+<li>
+<p>
+<code>linenum</code>, a function to output line number indications for the compiler
+</p>
+</li>
+</ul></div>
+<div class="paragraph"><p>So that our Config module thus far is merely:</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@<span style="color: #009900">O</span>@<span style="color: #990000">&lt;</span>portiaConfig<span style="color: #990000">.</span>ml@<span style="color: #990000">&gt;==</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> find_definitions <span style="color: #990000">=</span>
+    <span style="color: #009900">ref</span> <span style="color: #990000">((</span><span style="font-weight: bold"><span style="color: #0000FF">fun</span></span> _txt <span style="color: #990000">-&gt;</span> <span style="color: #990000">[])</span> <span style="color: #990000">:</span> <span style="color: #009900">string</span> <span style="color: #990000">-&gt;</span> <span style="color: #990000">(</span><span style="color: #009900">string</span> <span style="color: #990000">*</span> <span style="color: #009900">bool</span> <span style="color: #990000">*</span> <span style="color: #009900">int</span> <span style="color: #990000">*</span> <span style="color: #009900">int</span><span style="color: #990000">)</span> <span style="color: #009900">list</span><span style="color: #990000">)</span>
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> find_references <span style="color: #990000">=</span>
+    <span style="color: #009900">ref</span> <span style="color: #990000">((</span><span style="font-weight: bold"><span style="color: #0000FF">fun</span></span> _txt <span style="color: #990000">-&gt;</span> <span style="color: #990000">[])</span> <span style="color: #990000">:</span> <span style="color: #009900">string</span> <span style="color: #990000">-&gt;</span> <span style="color: #990000">(</span><span style="color: #009900">string</span> <span style="color: #990000">*</span> <span style="color: #009900">int</span> <span style="color: #990000">*</span> <span style="color: #009900">int</span><span style="color: #990000">)</span> <span style="color: #009900">list</span><span style="color: #990000">)</span>
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> find_inclusions <span style="color: #990000">=</span>
+    <span style="color: #009900">ref</span> <span style="color: #990000">((</span><span style="font-weight: bold"><span style="color: #0000FF">fun</span></span> _txt <span style="color: #990000">-&gt;</span> <span style="color: #990000">[])</span> <span style="color: #990000">:</span> <span style="color: #009900">string</span> <span style="color: #990000">-&gt;</span> <span style="color: #009900">string</span> <span style="color: #009900">list</span><span style="color: #990000">)</span>
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> postprocess <span style="color: #990000">=</span>
+    <span style="color: #009900">ref</span> <span style="color: #990000">((</span><span style="font-weight: bold"><span style="color: #0000FF">fun</span></span> txt <span style="color: #990000">-&gt;</span> txt<span style="color: #990000">)</span> <span style="color: #990000">:</span> <span style="color: #009900">string</span> <span style="color: #990000">-&gt;</span> <span style="color: #009900">string</span><span style="color: #990000">)</span>
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> linenum <span style="color: #990000">=</span>
+    <span style="color: #009900">ref</span> <span style="color: #990000">((</span><span style="font-weight: bold"><span style="color: #0000FF">fun</span></span> _n _f <span style="color: #990000">-&gt;</span> <span style="color: #FF0000">""</span><span style="color: #990000">)</span> <span style="color: #990000">:</span> <span style="color: #009900">int</span> <span style="color: #990000">-&gt;</span> <span style="color: #009900">string</span> <span style="color: #990000">-&gt;</span> <span style="color: #009900">string</span><span style="color: #990000">)</span>
+@<span style="color: #FF0000">}</span></tt></pre></div></div>
+<div class="paragraph"><p>Notice that separate compilation of this module imposes that we have to
+declare the types of these references.</p></div>
+<div class="paragraph"><p>Remember form the Main module that we will load by default the funnelweb
+plugin, so when running portia without option it will behave (loosely) like
+funnelweb.  This plugins will not implement <code>linenum</code>, though, so no line
+number directives will be outputted. It would be nice if by default the
+<code>linenum</code> function was relying on output file name to choose from a set of
+predefined implementations, though.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_misc">8. Misc</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>We have glossed over many trivial details to get there, but the program would
+not be complete without those.</p></div>
+<div class="sect2">
+<h3 id="_log">8.1. Log</h3>
+<div class="paragraph"><p>For such a simple tool, we merely want to display debug messages or nothing at
+all, so the only implemented function is <code>PortiaLog.debug</code> and, depending on
+flag <code>debug</code> is either print on stderr or does nothing:</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@<span style="color: #009900">O</span>@<span style="color: #990000">&lt;</span>portiaLog<span style="color: #990000">.</span>ml@<span style="color: #990000">&gt;==</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
+<span style="font-weight: bold"><span style="color: #000080">open</span></span> <span style="color: #009900">Batteries</span>
+
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> verbose <span style="color: #990000">=</span> <span style="color: #009900">ref</span> <span style="font-weight: bold"><span style="color: #0000FF">false</span></span>
+
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> debug fmt <span style="color: #990000">=</span>
+  <span style="font-weight: bold"><span style="color: #0000FF">if</span></span> <span style="color: #990000">!</span>verbose <span style="font-weight: bold"><span style="color: #0000FF">then</span></span>
+    <span style="font-weight: bold"><span style="color: #000080">Printf</span></span><span style="color: #990000">.</span>fprintf stderr fmt
+  <span style="font-weight: bold"><span style="color: #0000FF">else</span></span>
+    <span style="font-weight: bold"><span style="color: #000080">Printf</span></span><span style="color: #990000">.</span>ifprintf stderr fmt
+@<span style="color: #FF0000">}</span></tt></pre></div></div>
+</div>
+<div class="sect2">
+<h3 id="_asciidoc">8.2. Asciidoc</h3>
+<div class="paragraph"><p>Last but not least, let&#8217;s provide the configuration (in the form of the
+extraction functions) for asciidoc documents, both as an example and because
+that&#8217;s the documentation format I intend to use in the future:</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>@<span style="color: #009900">O</span>@<span style="color: #990000">&lt;</span>asciidoc<span style="color: #990000">.</span>ml@<span style="color: #990000">&gt;==</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
+<span style="font-weight: bold"><span style="color: #000080">open</span></span> <span style="color: #009900">Batteries</span>
+<span style="font-weight: bold"><span style="color: #000080">open</span></span> <span style="color: #009900">PortiaParse</span>
+
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> find_ml_definitions <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> re <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #000080">Str</span></span><span style="color: #990000">.</span>regexp <span style="color: #FF0000">"^\\.\\([^:\n]+\\)\\(:[^\n]*\\)?\n\\[source,ml\\]\n----\n\\(\\(\\([^-\n].*\\)?\n\\)+\\)----\n"</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    fold_all_groups <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #0000FF">fun</span></span> l p <span style="color: #990000">-&gt;</span>
+        <span style="font-weight: bold"><span style="color: #0000FF">match</span></span> l <span style="font-weight: bold"><span style="color: #0000FF">with</span></span>
+            <span style="color: #990000">|</span> <span style="color: #009900">Some</span> <span style="color: #990000">(</span>id<span style="color: #990000">,</span>_<span style="color: #990000">,</span>_<span style="color: #990000">)::</span><span style="color: #009900">Some</span> _<span style="color: #990000">::</span><span style="color: #009900">Some</span> <span style="color: #990000">(</span>_def<span style="color: #990000">,</span> start<span style="color: #990000">,</span> stop<span style="color: #990000">)::</span>_ <span style="color: #990000">-&gt;</span>
+                <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>uncapitalize id <span style="color: #990000">^</span> <span style="color: #FF0000">".ml"</span><span style="color: #990000">,</span> <span style="font-weight: bold"><span style="color: #0000FF">true</span></span><span style="color: #990000">,</span> start<span style="color: #990000">,</span> stop<span style="color: #990000">)::</span>p
+            <span style="color: #990000">|</span> <span style="color: #009900">Some</span> <span style="color: #990000">(</span>id<span style="color: #990000">,</span>_<span style="color: #990000">,</span>_<span style="color: #990000">)::</span><span style="color: #009900">None</span><span style="color: #990000">::</span><span style="color: #009900">Some</span> <span style="color: #990000">(</span>_def<span style="color: #990000">,</span> start<span style="color: #990000">,</span> stop<span style="color: #990000">)::</span>_ <span style="color: #990000">-&gt;</span>
+                <span style="color: #990000">(</span>id<span style="color: #990000">,</span> <span style="font-weight: bold"><span style="color: #0000FF">false</span></span><span style="color: #990000">,</span> start<span style="color: #990000">,</span> stop<span style="color: #990000">)::</span>p
+            <span style="color: #990000">|</span> _ <span style="color: #990000">-&gt;</span> <span style="font-weight: bold"><span style="color: #0000FF">assert</span></span> <span style="font-weight: bold"><span style="color: #0000FF">false</span></span><span style="color: #990000">)</span> <span style="color: #990000">[]</span> re
+
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> find_file_content <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> re <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #000080">Str</span></span><span style="color: #990000">.</span>regexp <span style="color: #FF0000">"^\\.Content of \\([^\n]*\\)\n\\[source,[^\n]*\\]\n----\n\\(\\(\\([^-].*\\)?\n\\)+\\)----\n"</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    fold_all_groups <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #0000FF">fun</span></span> l p <span style="color: #990000">-&gt;</span>
+        <span style="font-weight: bold"><span style="color: #0000FF">match</span></span> l <span style="font-weight: bold"><span style="color: #0000FF">with</span></span>
+            <span style="color: #990000">|</span> <span style="color: #009900">Some</span> <span style="color: #990000">(</span>id<span style="color: #990000">,</span>_<span style="color: #990000">,</span>_<span style="color: #990000">)::</span><span style="color: #009900">Some</span> <span style="color: #990000">(</span>_def<span style="color: #990000">,</span> start<span style="color: #990000">,</span> stop<span style="color: #990000">)::</span>_ <span style="color: #990000">-&gt;</span>
+              <span style="color: #990000">(</span>id<span style="color: #990000">,</span> <span style="font-weight: bold"><span style="color: #0000FF">true</span></span><span style="color: #990000">,</span> start<span style="color: #990000">,</span> stop<span style="color: #990000">)::</span>p
+            <span style="color: #990000">|</span> _ <span style="color: #990000">-&gt;</span> <span style="font-weight: bold"><span style="color: #0000FF">assert</span></span> <span style="font-weight: bold"><span style="color: #0000FF">false</span></span><span style="color: #990000">)</span> <span style="color: #990000">[]</span> re
+
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> find_definitions str <span style="color: #990000">=</span>
+    find_ml_definitions str @ find_file_content str
+
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> find_references <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> re <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #000080">Str</span></span><span style="color: #990000">.</span>regexp <span style="color: #FF0000">"\\((\\* \\.\\.\\.\\([^\n\\*]+\\)\\.\\.\\. \\*)\\)"</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    fold_all_groups <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #0000FF">fun</span></span> l p <span style="color: #990000">-&gt;</span> <span style="font-weight: bold"><span style="color: #0000FF">match</span></span> l <span style="font-weight: bold"><span style="color: #0000FF">with</span></span>
+        <span style="color: #990000">|</span> <span style="color: #990000">[</span> <span style="color: #009900">Some</span> <span style="color: #990000">(</span>_<span style="color: #990000">,</span> start<span style="color: #990000">,</span> stop<span style="color: #990000">);</span> <span style="color: #009900">Some</span> <span style="color: #990000">(</span>id<span style="color: #990000">,</span> _<span style="color: #990000">,</span> _<span style="color: #990000">)</span> <span style="color: #990000">]</span> <span style="color: #990000">-&gt;</span> <span style="color: #990000">(</span>id<span style="color: #990000">,</span> start<span style="color: #990000">,</span> stop<span style="color: #990000">)::</span>p
+        <span style="color: #990000">|</span> _ <span style="color: #990000">-&gt;</span> <span style="font-weight: bold"><span style="color: #0000FF">assert</span></span> <span style="font-weight: bold"><span style="color: #0000FF">false</span></span><span style="color: #990000">)</span> <span style="color: #990000">[]</span> re
+
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> find_inclusions <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> re <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #000080">Str</span></span><span style="color: #990000">.</span>regexp <span style="color: #FF0000">"^include::\\([^\\[\n]+\\)\\[\\([^\\[\n]*\\)\\]\n"</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    fold_all_groups <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #0000FF">fun</span></span> l p <span style="color: #990000">-&gt;</span> <span style="font-weight: bold"><span style="color: #0000FF">match</span></span> l <span style="font-weight: bold"><span style="color: #0000FF">with</span></span>
+        <span style="color: #990000">|</span> <span style="color: #990000">[</span> <span style="color: #009900">Some</span> <span style="color: #990000">(</span>f<span style="color: #990000">,</span> _<span style="color: #990000">,</span> _<span style="color: #990000">);</span> _ <span style="color: #990000">]</span> <span style="color: #990000">-&gt;</span> f<span style="color: #990000">::</span>p
+        <span style="color: #990000">|</span> _ <span style="color: #990000">-&gt;</span> p<span style="color: #990000">)</span> <span style="color: #990000">[]</span> re
+
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> <span style="color: #990000">()</span> <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #000080">PortiaConfig</span></span><span style="color: #990000">.</span>find_definitions <span style="color: #990000">:=</span> find_definitions <span style="color: #990000">;</span>
+    <span style="font-weight: bold"><span style="color: #000080">PortiaConfig</span></span><span style="color: #990000">.</span>find_references  <span style="color: #990000">:=</span> find_references <span style="color: #990000">;</span>
+    <span style="font-weight: bold"><span style="color: #000080">PortiaConfig</span></span><span style="color: #990000">.</span>find_inclusions  <span style="color: #990000">:=</span> find_inclusions <span style="color: #990000">;</span>
+@<span style="color: #FF0000">}</span></tt></pre></div></div>
+<div class="paragraph"><p>Notice here <code>find_file_content</code> which allows to specify in the documentation
+some content to be copied verbatim into a file. This is handy to generate files
+out of band for testing fixture for instance.</p></div>
+</div>
+</div>
+</div>
+</div>
+<div id="footnotes"><hr /></div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2015-10-21 22:33:42 CEST
+</div>
+</div>
+</body>
+</html>
