@@ -1,0 +1,105 @@
+// vim:filetype=asciidoc expandtab spell spelllang=en ts=2 sw=2
+= Notations
+rixed@happyleptic.org
+2014-11-01
+:toc:
+:numbered:
+
+This document both describe 'fleetdroid' and _implements_ it, using a
+technique known as "literate programming". A precise set of notation is thus
+in order.
+
+First of all, block like this is code, with a name as title:
+
+.a code block
+[source,ml]
+----
+let some_string = "hello world!"
+----
+
+If another block of code appear later in the text with the same name, it means
+that this fragment of code will be present after the previous one in the
+program, although you usually don't have to know how fragments are written in
+the program because when two blocks of code appear in different locations they
+tend to be loosely related anyway such that they relative position in the
+program is of no importance.
+
+Sometime, though, we must defer the introduction of some code and thus will
+display code with a 'placeholder' for a latter definition. Those placeholders
+will always follow the schema `(* ...some text... *)`. Note the absence of
+space between ellipsis and the placeholder name, which makes the matching code
+easier. Here is an example:
+
+.a code block with a placeholder
+[source,ml]
+----
+type person = {
+  name : string ;
+  date_of_birth : float ;
+  (* ...other person attributes... *)
+};
+----
+
+This has the advantage of being valid OCaml code thus being nicely rendered as
+a comment by asciidoc, but this has the disadvantage of begin valid OCaml code
+so that a missing expansion will likely leads to a valid program!
+
+Later in this document, a code block entitled with the string present between
+the ellipsis marks is supposed to replace the placeholder. For instance:
+
+.other person attributes
+[source,ml]
+----
+nickname : string ;
+email : string ;
+----
+
+It is even possible that some more code with the same title will follow, in
+which case it is meant to be written in the placeholder as well:
+
+.other person attributes
+[source,ml]
+----
+country_of_residence : string (* ISO country code*) ;
+----
+
+Finally, when the title of a code block a preceded by a name and a colon, this
+mean that the content of this code block is supposed to take place in this
+module. For instance:
+
+.Example: an implicit module
+[source,ml]
+----
+let value = 42
+----
+
+is equivalent of:
+
+.the same, with explicit module
+[source,ml]
+----
+module Example = struct
+  let value = 42
+end
+----
+
+This is so because in OCaml files play the role of implicit modules, and since
+we don't use files here to organize the code footnote:[actually, code blocks
+will end up being written in files of that name prior compilation] we must
+have a way to open a module implicitly.
+
+As expected, all code blocks prefixed with the same module name will be
+appended in this module in the order they are met in this text.
+
+And that's all one have to know to be able to reconstruct an OCaml program from
+this documentation!
+
+In addition to this, we also want to be able to define other files. For that
+purpose we will be using this rather explicit title:
+
+.Content of a_file_name.ext
+[source,sh]
+----
+foo bar
+----
+
