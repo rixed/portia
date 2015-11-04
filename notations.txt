@@ -5,7 +5,7 @@ rixed@happyleptic.org
 :toc:
 :numbered:
 
-This document both describe 'fleetdroid' and _implements_ it, using a
+This document both _describes_ a program and _implements_ it, using a
 technique known as "literate programming". A precise set of notation is thus
 in order.
 
