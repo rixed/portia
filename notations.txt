@@ -5,11 +5,27 @@ rixed@happyleptic.org
 :toc:
 :numbered:
 
-This document both _describes_ a program and _implements_ it, using a
-technique known as "literate programming". A precise set of notation is thus
-in order.
+This document _describes_ a program with the intent to explain it and document
+every design decisions. Actually, it describes that program so well that the
+entire program can be reconstructed from this documentation. Indeed, the whole
+code is presented, although in an order that suits the flow of explanations rather than
+the flow of computation. Extracting a program code from its explanations
+rather than adding some documentation within its code is a technique called
+"literate programming" and have several advantages over traditional code
+writing:
 
-First of all, block like this is code, with a name as title:
+- it produces a much better documentation of a program;
+- this documentation does not become obsolete that easily;
+- last but not least, it forces the author of the program to think about and
+  justify many decisions that he would have otherwise taken unconsciously.
+
+To be able to extract a working program from a natural language publication
+requires some rigorous notations, though, that this short guide will describe.
+
+Notice that although we will take OCaml as the implementation language in this
+guide the same set of technique can be applied to any language.
+
+First of all, blocks like this are code, with a name as title:
 
 .a code block
 [source,ml]
@@ -17,18 +33,16 @@ First of all, block like this is code, with a name as title:
 let some_string = "hello world!"
 ----
 
-If another block of code appear later in the text with the same name, it means
-that this fragment of code will be present after the previous one in the
-program, although you usually don't have to know how fragments are written in
-the program because when two blocks of code appear in different locations they
-tend to be loosely related anyway such that they relative position in the
-program is of no importance.
+If another block of code appears later in the text with the same title then it
+implies that this fragment of code will be present after the previous one in
+the program. Notice that when two blocks of code appear in different locations
+they tend to be loosely related such that their relative position in the
+program is of little importance.
 
-Sometime, though, we must defer the introduction of some code and thus will
-display code with a 'placeholder' for a latter definition. Those placeholders
-will always follow the schema `(* ...some text... *)`. Note the absence of
-space between ellipsis and the placeholder name, which makes the matching code
-easier. Here is an example:
+Sometime, though, we must defer the introduction of some code until a latter
+time in the presentation, and thus will display code with a 'placeholder' for
+a latter definition. Those placeholders will always follow the schema `(*
+...some text... *)`. Here is an example:
 
 .a code block with a placeholder
 [source,ml]
@@ -40,9 +54,9 @@ type person = {
 };
 ----
 
-This has the advantage of being valid OCaml code thus being nicely rendered as
-a comment by asciidoc, but this has the disadvantage of begin valid OCaml code
-so that a missing expansion will likely leads to a valid program!
+This has the advantage of being valid code thus being nicely rendered as
+a comment by asciidoc. Being valid code has a own side though: a missing
+expansion may leads to a valid program!
 
 Later in this document, a code block entitled with the string present between
 the ellipsis marks is supposed to replace the placeholder. For instance:
@@ -60,12 +74,12 @@ which case it is meant to be written in the placeholder as well:
 .other person attributes
 [source,ml]
 ----
-country_of_residence : string (* ISO country code*) ;
+country_of_residence : string (* ISO country code *) ;
 ----
 
-Finally, when the title of a code block a preceded by a name and a colon, this
-mean that the content of this code block is supposed to take place in this
-module. For instance:
+Finally, when the title of a code block is preceded by a name and a colon, this
+mean that the content of this code block is supposed to take place in a module
+named after that suffix. For instance:
 
 .Example: an implicit module
 [source,ml]
@@ -103,3 +117,4 @@ purpose we will be using this rather explicit title:
 foo bar
 ----
 
+so that we can expose short auxiliary files.

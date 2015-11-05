@@ -652,10 +652,37 @@ asciidoc.install(2);
 <div id="content">
 <div id="preamble">
 <div class="sectionbody">
-<div class="paragraph"><p>This document both <em>describes</em> a program and <em>implements</em> it, using a
-technique known as "literate programming". A precise set of notation is thus
-in order.</p></div>
-<div class="paragraph"><p>First of all, block like this is code, with a name as title:</p></div>
+<div class="paragraph"><p>This document <em>describes</em> a program with the intent to explain it and document
+every design decisions. Actually, it describes that program so well that the
+entire program can be reconstructed from this documentation. Indeed, the whole
+code is presented, although in an order that suits the flow of explanations rather than
+the flow of computation. Extracting a program code from its explanations
+rather than adding some documentation within its code is a technique called
+"literate programming" and have several advantages over traditional code
+writing:</p></div>
+<div class="ulist"><ul>
+<li>
+<p>
+it produces a much better documentation of a program;
+</p>
+</li>
+<li>
+<p>
+this documentation does not become obsolete that easily;
+</p>
+</li>
+<li>
+<p>
+last but not least, it forces the author of the program to think about and
+  justify many decisions that he would have otherwise taken unconsciously.
+</p>
+</li>
+</ul></div>
+<div class="paragraph"><p>To be able to extract a working program from a natural language publication
+requires some rigorous notations, though, that this short guide will describe.</p></div>
+<div class="paragraph"><p>Notice that although we will take OCaml as the implementation language in this
+guide the same set of technique can be applied to any language.</p></div>
+<div class="paragraph"><p>First of all, blocks like this are code, with a name as title:</p></div>
 <div class="listingblock">
 <div class="title">a code block</div>
 <div class="content"><!-- Generator: GNU source-highlight 3.1.8
@@ -663,17 +690,15 @@ by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
 <pre><tt><span style="font-weight: bold"><span style="color: #0000FF">let</span></span> some_string <span style="color: #990000">=</span> <span style="color: #FF0000">"hello world!"</span></tt></pre></div></div>
-<div class="paragraph"><p>If another block of code appear later in the text with the same name, it means
-that this fragment of code will be present after the previous one in the
-program, although you usually don&#8217;t have to know how fragments are written in
-the program because when two blocks of code appear in different locations they
-tend to be loosely related anyway such that they relative position in the
-program is of no importance.</p></div>
-<div class="paragraph"><p>Sometime, though, we must defer the introduction of some code and thus will
-display code with a <em>placeholder</em> for a latter definition. Those placeholders
-will always follow the schema <code>(* ...some text... *)</code>. Note the absence of
-space between ellipsis and the placeholder name, which makes the matching code
-easier. Here is an example:</p></div>
+<div class="paragraph"><p>If another block of code appears later in the text with the same title then it
+implies that this fragment of code will be present after the previous one in
+the program. Notice that when two blocks of code appear in different locations
+they tend to be loosely related such that their relative position in the
+program is of little importance.</p></div>
+<div class="paragraph"><p>Sometime, though, we must defer the introduction of some code until a latter
+time in the presentation, and thus will display code with a <em>placeholder</em> for
+a latter definition. Those placeholders will always follow the schema <code>(*
+...some text... *)</code>. Here is an example:</p></div>
 <div class="listingblock">
 <div class="title">a code block with a placeholder</div>
 <div class="content"><!-- Generator: GNU source-highlight 3.1.8
@@ -685,9 +710,9 @@ http://www.gnu.org/software/src-highlite -->
   date_of_birth <span style="color: #990000">:</span> <span style="color: #009900">float</span> <span style="color: #990000">;</span>
   <span style="font-style: italic"><span style="color: #9A1900">(* ...other person attributes... *)</span></span>
 <span style="color: #FF0000">}</span><span style="color: #990000">;</span></tt></pre></div></div>
-<div class="paragraph"><p>This has the advantage of being valid OCaml code thus being nicely rendered as
-a comment by asciidoc, but this has the disadvantage of begin valid OCaml code
-so that a missing expansion will likely leads to a valid program!</p></div>
+<div class="paragraph"><p>This has the advantage of being valid code thus being nicely rendered as
+a comment by asciidoc. Being valid code has a own side though: a missing
+expansion may leads to a valid program!</p></div>
 <div class="paragraph"><p>Later in this document, a code block entitled with the string present between
 the ellipsis marks is supposed to replace the placeholder. For instance:</p></div>
 <div class="listingblock">
@@ -706,10 +731,10 @@ which case it is meant to be written in the placeholder as well:</p></div>
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
-<pre><tt>country_of_residence <span style="color: #990000">:</span> <span style="color: #009900">string</span> <span style="font-style: italic"><span style="color: #9A1900">(* ISO country code*)</span></span> <span style="color: #990000">;</span></tt></pre></div></div>
-<div class="paragraph"><p>Finally, when the title of a code block a preceded by a name and a colon, this
-mean that the content of this code block is supposed to take place in this
-module. For instance:</p></div>
+<pre><tt>country_of_residence <span style="color: #990000">:</span> <span style="color: #009900">string</span> <span style="font-style: italic"><span style="color: #9A1900">(* ISO country code *)</span></span> <span style="color: #990000">;</span></tt></pre></div></div>
+<div class="paragraph"><p>Finally, when the title of a code block is preceded by a name and a colon, this
+mean that the content of this code block is supposed to take place in a module
+named after that suffix. For instance:</p></div>
 <div class="listingblock">
 <div class="title">Example: an implicit module</div>
 <div class="content"><!-- Generator: GNU source-highlight 3.1.8
@@ -744,13 +769,14 @@ by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
 <pre><tt>foo bar</tt></pre></div></div>
+<div class="paragraph"><p>so that we can expose short auxiliary files.</p></div>
 </div>
 </div>
 </div>
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2015-11-04 21:38:24 CET
+Last updated 2015-11-05 21:32:51 CET
 </div>
 </div>
 </body>
