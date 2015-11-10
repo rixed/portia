@@ -43,7 +43,7 @@ let find_ml_definitions =
     fold_all_groups (fun l p ->
         match l with
             | Some (id,_,_)::Some _::Some (_def, start, stop)::_ ->
-                (String.uncapitalize id ^ ".ml", true, start, stop)::p
+                (id ^ ".ml", true, start, stop)::p
             | Some (id,_,_)::None::Some (_def, start, stop)::_ ->
                 (id, false, start, stop)::p
             | _ -> assert false) [] re
