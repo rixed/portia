@@ -83,14 +83,15 @@ indirectly, referenced from an output definition.
 @$@<DefinitionType@>==@{@-
 @<Location@>
 @<DefName@>
-type t = {  loc : location ;
-           locs : location list ; (* reverse order *)
+type t = { locs : location list ; (* reverse order *)
              id : id ;
          output : bool }
 @}
 ----
 
-Notice that there are always at least one location (the first one, `loc`).
+Notice that it's possible that there is no location at all (empty list), meaning
+the definition was missing (might be conveniently allowed with +ignore_missing+ flag,
+to make it possible to generate a valid program and write the extensions later on).
 
 It's always a good idea to write proper printers for any new type. This may
 looks fastidious but you are actually doing yourself a favor: better have these
@@ -109,10 +110,14 @@ let location_print fmt loc =
 
 let mtime_print = Float.print (* TODO: user friendly date&time? *)
 
+let rec locations_print fmt = function
+    | [] -> Printf.fprintf fmt "undefined"
+    | [loc] -> location_print fmt loc
+    | _loc::locs' ->
+        locations_print fmt locs' (* print only the first location *)
+
 let print fmt t =
-    Printf.fprintf fmt "%s.%s@@%a"
-        t.loc.file t.id
-        location_print t.loc
+    Printf.fprintf fmt "%s@@%a" t.id locations_print t.locs
 @}
 ----
 
@@ -142,6 +147,8 @@ course the identifier for the definition.
 ----
 @$@<Definitions@>+=@{@-
 
+let ignore_missing = ref false
+
 let registry = Hashtbl.create 31
 
 let add id output fname off sz =
@@ -149,16 +156,18 @@ let add id output fname off sz =
     PortiaLog.debug "Add definition for %s at position %a\n"
         id location_print loc ;
     Hashtbl.modify_opt id (function
-        | None   -> Some { loc ; id ; output ; locs = [] }
+        | None   -> Some { id ; output ; locs = [loc] }
         | Some t -> Some { t with locs = loc :: t.locs })
         registry
 
 let lookup id =
     try Hashtbl.find registry id
-    with Not_found -> (
-        Printf.fprintf stderr "Cannot find definition for '%s'\n" id ;
-        exit 1
-    )
+    with Not_found ->
+        if !ignore_missing then { id ; output = false ; locs = [] }
+        else (
+            Printf.fprintf stderr "Cannot find definition for '%s'\n" id ;
+            exit 1
+        )
 @}
 ----
 
@@ -194,10 +203,10 @@ let rec expanded_loc tab loc =
     (* TODO: sort this list according to start_offset *)
     PortiaLog.debug "found references: %a\n"
         (List.print (Tuple3.print String.print Int.print Int.print)) refs ;
-    let txt, last_stop =
-        List.fold_left (fun (txt,last_stop) (id,start,stop) ->
-            let t' = lookup id in
+    let txt, last_stop, tab =
+        List.fold_left (fun (txt,last_stop,tab) (id,start,stop) ->
             assert (start >= last_stop) ;
+            let t' = lookup id in
             (* Warning: this will indent string literals! *)
             let txt = txt ^
                 indent tab
@@ -216,8 +225,8 @@ let rec expanded_loc tab loc =
                 String.length txt > 0 &&
                 txt.[String.length txt - 1] != '\n' then
                 "\n" else "") ^
-            ln, stop)
-            ("", 0) refs in
+            ln, stop, spaces tab')
+            ("", 0, tab) refs in
     (* Complete with what's left *)
     let rest = String.length unexpanded - last_stop in
     let txt = txt ^
@@ -226,7 +235,10 @@ let rec expanded_loc tab loc =
     !PortiaConfig.linenum loc.lineno loc.file ^ txt
 
 and expanded_body tab t =
-    t.loc :: List.rev t.locs |>
+    (* If there is no definitions return the tabulation. Not doing so would
+       make beginning of line (maybe not bank) disappear. *)
+    if t.locs = [] then tab else
+    List.rev t.locs |>
     List.map (expanded_loc tab) |>
     String.concat ""
 @}
@@ -239,12 +251,13 @@ we used up to here for helping dealing with text files and locations:
 [source,ml]
 ----
 @$@<TxtHelpers@>==@{@-
+let spaces tab = String.make (String.length tab) ' '
+
 let indent =
-    let spaces n = String.make n ' ' in
     let open Str in
     let re = regexp "\n\\([^\n]\\)" in
     fun tab str ->
-        let tab' = spaces (String.length tab) in
+        let tab' = spaces tab in
         tab ^ global_replace re ("\n"^ tab' ^"\\1") str
 
 (* first char is at column 0 *)
