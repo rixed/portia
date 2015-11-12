@@ -239,7 +239,8 @@ and expanded_body tab t =
        make beginning of line (maybe not bank) disappear. *)
     if t.locs = [] then tab else
     List.rev t.locs |>
-    List.map (expanded_loc tab) |>
+    List.mapi (fun i loc ->
+        expanded_loc (if i=0 then tab else spaces tab) loc) |>
     String.concat ""
 @}
 ----
