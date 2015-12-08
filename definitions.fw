@@ -280,10 +280,12 @@ let read_file fname offset size =
     let fd = openfile fname [O_RDONLY] 0 in
     lseek fd offset SEEK_SET |> ignore ;
     let str = String.create size in
-    let act_sz = read fd str 0 size in
+    let rec read_chunk prev =
+        if prev < size then
+            let act_sz = read fd str prev (size-prev) in
+            read_chunk (prev + act_sz) in
+    read_chunk 0 ;
     close fd ;
-    (* no short read on ordinary files *)
-    assert (act_sz = size) ;
     str
 @}
 ----
