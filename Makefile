@@ -111,9 +111,9 @@ all_tests.byte: $(TEST_SOURCES:.ml=.cmo) all_tests.ml
 	$(OCAMLC)   -o $@ $(SYNTAX) -package "$(REQUIRES) QTest2Lib" -linkpkg $(OCAMLFLAGS) -w -33 $^
 
 all_tests.ml: $(TEST_SOURCES)
-	$(QTEST) --preamble 'open Batteries;;' -o $@ extract $^
+	$(QTEST) --shuffle --preamble 'open Batteries;;' -o $@ extract $^
 
 check: all_tests.byte
 	@echo "Running inline tests"
-	@timeout 10s ./$< --shuffle || echo "Fail!"
+	@timeout 10s ./$< || echo "Fail!"
 
