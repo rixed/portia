@@ -74,6 +74,9 @@ let main =
                       (default to funnelweb)" ;
           "-libdir", Set_string libdir,
                      "Where to read plugins from" ;
+          "-ignore-missing", Set PortiaDefinition.ignore_missing,
+                     "Referenced  but never defined blocks are not \
+                      an error" ;
           "-debug",  Set PortiaLog.verbose,
                      "Output debug messages" ]
         (addlst srcfiles)
