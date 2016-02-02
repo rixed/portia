@@ -11,3 +11,4 @@ portia
 *.cmo
 *.cma
 main.fw
+*.log
