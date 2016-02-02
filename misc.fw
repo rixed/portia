@@ -39,7 +39,8 @@ open Batteries
 open PortiaParse
 
 let find_ml_definitions =
-    let re = Str.regexp "^\\.\\([^:\n]+\\)\\(:[^\n]*\\)?\n\\[source,ml\\]\n----\n\\(\\(\\([^-\n].*\\)?\n\\)+\\)----\n" in
+    let re = Str.regexp ("^\\.\\([^:\n]+\\)\\(:[^\n]*\\)?\n\\[source,ml\\]\n" ^
+                         "----\n\\(\\(\\([^-\n].*\\)?\n\\)+\\)----\n") in
     fold_all_groups (fun l p ->
         match l with
             | Some (id,_,_)::Some _::Some (_def, start, stop)::_ ->
@@ -49,7 +50,8 @@ let find_ml_definitions =
             | _ -> assert false) [] re
 
 let find_file_content =
-    let re = Str.regexp "^\\.Content of \\([^\n]*\\)\n\\[source,[^\n]*\\]\n----\n\\(\\(\\([^-].*\\)?\n\\)+\\)----\n" in
+    let re = Str.regexp ("^\\.Content of \\([^\n]*\\)\n\\[source,[^\n]*\\]\n" ^
+                         "----\n\\(\\(\\([^-].*\\)?\n\\)+\\)----\n") in
     fold_all_groups (fun l p ->
         match l with
             | Some (id,_,_)::Some (_def, start, stop)::_ ->
@@ -57,7 +59,7 @@ let find_file_content =
             | _ -> assert false) [] re
 
 let find_definitions str =
-    find_ml_definitions str @ find_file_content str
+    find_ml_definitions str @@ find_file_content str
 
 let find_references =
     let re = Str.regexp "\\((\\* \\.\\.\\.\\([^\n\\*]+\\)\\.\\.\\. \\*)\\)" in

@@ -89,9 +89,10 @@ type t = { locs : location list ; (* reverse order *)
 @}
 ----
 
-Notice that it's possible that there is no location at all (empty list), meaning
-the definition was missing (might be conveniently allowed with +ignore_missing+ flag,
-to make it possible to generate a valid program and write the extensions later on).
+Notice that it's possible that there is no location at all (empty list),
+meaning the definition was missing (might be conveniently allowed with
++ignore_missing+ flag, to make it possible to generate a valid program and
+write the extensions later on).
 
 It's always a good idea to write proper printers for any new type. This may
 looks fastidious but you are actually doing yourself a favor: better have these
