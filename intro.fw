@@ -118,3 +118,5 @@ the source document, which somewhat defeats the line number information
 feature. Therefore it should be possible to disable indentation altogether for
 more accurate position reporting.
 
+Add a warning at the beginning of generated files that they are automatically
+generated and should not be edited manually.

@@ -1,7 +1,6 @@
 depend
 fwdepend
 *.annot
-*.ml
 *.lis
 *.byte
 *.opt
@@ -12,3 +11,4 @@ portia
 *.cma
 main.fw
 *.log
+all_tests.ml

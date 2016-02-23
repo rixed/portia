@@ -85,8 +85,7 @@ portia.cma: $(LIB_SOURCES:.ml=.cmo) $(LIB_SOURCES:.ml=.cmi)
 	$(OCAMLC) $(SYNTAX) -package "$(REQUIRES)" -a -o $@ -custom -linkpkg $(OCAMLFLAGS) $(LIB_SOURCES:.ml=.cmo)
 
 clean:
-	@$(RM) -f *.[aso] *.cmi *.annot *.lis *.html \
-	 $(GEN_SOURCES) $(PROG_SOURCES:.ml=.cmo) \
+	@$(RM) -f *.[aso] *.cmi *.annot *.lis *.html $(PROG_SOURCES:.ml=.cmo) \
 	 all_tests.ml depend fwdepend main.fw
 
 distclean: clean
