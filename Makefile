@@ -13,13 +13,14 @@ override OCAMLFLAGS    += $(INCS) -w Ael-31-33-40-41-42-44-45 -g -annot -I $(top
 REQUIRES = batteries dynlink
 
 .PHONY: clean install uninstall reinstall doc loc
-.SUFFIXES: .ml .mli .cmo .cmi .cmx .cmxs .fw .fwi
+.SUFFIXES: .ml .mli .cmo .cmi .cmx .cmxs .fw
 
 FW_SOURCES = $(wildcard *.fw) main.fw
 LIB_SOURCES = portiaLog.ml portiaConfig.ml portiaDefinition.ml portiaParse.ml
-PROG_SOURCES = $(LIB_SOURCES) output.ml main.ml
+PROG_GEN_SOURCES = $(LIB_SOURCES) output.ml main.ml
+PROG_SOURCES = pkgConfig.ml $(PROG_GEN_SOURCES)
 BACKEND_SOURCES = funnelweb.ml ocaml.ml c.ml asciidoc.ml
-GEN_SOURCES = $(PROG_SOURCES) $(BACKEND_SOURCES)
+GEN_SOURCES = $(PROG_GEN_SOURCES) $(BACKEND_SOURCES)
 
 all: $(BACKEND_SOURCES:.ml=.cmo) portia portia.cma $(LIB_SOURCES:.ml=.cmi)
 
@@ -55,7 +56,7 @@ $(GEN_SOURCES): $(FW_SOURCES)
 	 fi
 
 # We'd be glad to depend on *.ml but ocamldep is so slow...
-# Use "make -B depend" when you know you changed dependancies.
+# Use "make -B depend" when you know you changed dependencies.
 depend: $(GEN_SOURCES)
 	$(OCAMLDEP) $(SYNTAX) -package "$(REQUIRES)" *.ml > $@
 include depend
@@ -66,8 +67,8 @@ portia.byte: $(PROG_SOURCES:.ml=.cmo)
 portia.opt:  $(PROG_SOURCES:.ml=.cmx)
 	$(OCAMLOPT) -o $@ $(SYNTAX) -package "$(REQUIRES)" -linkpkg $(OCAMLOPTFLAGS) $^
 
-.fwi.fw:
-	sed -e 's|@PLUGINDIR@|$(PLUGINDIR)|g' $< > $@
+pkgConfig.ml:
+	echo 'let plugindir = "$(PLUGINDIR)"' > $@
 
 .ml.cmo:
 	$(OCAMLC) $(SYNTAX) -package "$(REQUIRES)" $(OCAMLFLAGS) -c $<
@@ -86,7 +87,7 @@ portia.cma: $(LIB_SOURCES:.ml=.cmo) $(LIB_SOURCES:.ml=.cmi)
 
 clean:
 	@$(RM) -f *.[aso] *.cmi *.annot *.lis *.html $(PROG_SOURCES:.ml=.cmo) \
-	 all_tests.ml depend fwdepend main.fw
+	 all_tests.ml depend fwdepend
 
 distclean: clean
 	@$(RM) -f $(BACKEND_SOURCES:.ml=.cmo) portia.byte portia.opt portia

@@ -11,7 +11,7 @@ let load_lib libdir fname =
 # 66 "main.fw"
 let main =
     let plugins = ref [] in
-    let libdir = ref "/usr/lib/portia" in
+    let libdir = ref PkgConfig.plugindir in
     let srcfiles = ref [] in
     let addlst l s = l := s :: !l in
     Arg.(parse
