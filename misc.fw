@@ -49,6 +49,18 @@ let find_ml_definitions =
                 (id, false, start, stop)::p
             | _ -> assert false) [] re
 
+(*$= find_ml_definitions & ~printer:dump
+  (find_ml_definitions \
+    ".Foo: bar\n\\
+     [source,ml]\n\\
+     ----\n\\
+     glop.\n\\
+     \n\\
+     ----\n\\
+     I'm out!\n\\
+     ----\n") [ "Foo.ml", true, 27, 34 ]
+*)
+
 let find_file_content =
     let re = Str.regexp ("^\\.Content of \\([^\n]*\\)\n\\[source,[^\n]*\\]\n" ^
                          "----\n\\(\\(\\([^-].*\\)?\n\\)+\\)----\n") in
@@ -66,6 +78,13 @@ let find_references =
     fold_all_groups (fun l p -> match l with
         | [ Some (_, start, stop); Some (id, _, _) ] -> (id, start, stop)::p
         | _ -> assert false) [] re
+
+(* Note that we have to break up the comment mark in order not to
+   confuse qtest. *)
+(*$= find_references & ~printer:dump
+  (find_references ("xx ("^"* ...Inventory.Make functor... *"^") yy")) \
+    [ "Inventory.Make functor", 3, 37 ]
+*)
 
 let find_inclusions =
     let re = Str.regexp "^include::\\([^\\[\n]+\\)\\[\\([^\\[\n]*\\)\\]\n" in
