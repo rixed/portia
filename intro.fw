@@ -120,3 +120,5 @@ more accurate position reporting.
 
 Add a warning at the beginning of generated files that they are automatically
 generated and should not be edited manually.
+
+Do not output linenum for shell because they mess with the shebang.
