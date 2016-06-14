@@ -108,7 +108,7 @@ reinstall: uninstall install
 
 TEST_SOURCES = $(filter-out main.ml,$(GEN_SOURCES))
 all_tests.byte: $(TEST_SOURCES:.ml=.cmo) all_tests.ml
-	$(OCAMLC)   -o $@ $(SYNTAX) -package "$(REQUIRES) QTest2Lib" -linkpkg $(OCAMLFLAGS) -w -33 $^
+	$(OCAMLC)   -o $@ $(SYNTAX) -package "$(REQUIRES) qcheck" -linkpkg $(OCAMLFLAGS) -w -33 $^
 
 all_tests.ml: $(TEST_SOURCES)
 	$(QTEST) --shuffle --preamble 'open Batteries;;' -o $@ extract $^
