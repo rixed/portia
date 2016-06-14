@@ -14,7 +14,7 @@ open PortiaDefinition
 let definition filename def =
     if def.output then (
         PortiaLog.debug "Generating %s...\n%!" filename ;
-        let text = expanded_body "" def |>
+        let text = expanded_body 0 def |>
                    !PortiaConfig.postprocess in
         output_file ~filename ~text
     ) else (

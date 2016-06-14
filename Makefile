@@ -88,6 +88,7 @@ portia.cma: $(LIB_SOURCES:.ml=.cmo) $(LIB_SOURCES:.ml=.cmi)
 clean:
 	@$(RM) -f *.[aso] *.cmi *.annot *.lis *.html $(PROG_SOURCES:.ml=.cmo) \
 	 all_tests.ml depend fwdepend
+	@$(MAKE) -C tests clean
 
 distclean: clean
 	@$(RM) -f $(BACKEND_SOURCES:.ml=.cmo) portia.byte portia.opt portia
@@ -116,4 +117,5 @@ all_tests.ml: $(TEST_SOURCES)
 check: all_tests.byte
 	@echo "Running inline tests"
 	@timeout 10s ./$< || echo "Fail!"
+	@$(MAKE) -C tests || echo "Fail!"
 

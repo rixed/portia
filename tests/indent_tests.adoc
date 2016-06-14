@@ -1,0 +1,73 @@
+Appending of definitions must not alter indentation in any way
+but just concatenate the lines:
+
+.Indent_test1: the first definition
+[source,ml]
+----
+let a = 42
+----
+
+This should be left justified:
+
+.Indent_test1: another definition
+[source,ml]
+----
+let b = 0.314 in
+----
+
+Starting indent must be kept:
+
+.Indent_test1: indented chunk
+[source,ml]
+----
+    b *. 10.
+----
+
+And we should get this:
+
+Replacing placeholders, though, must be smarter than that.
+We must indent them to match where they start.
+
+.Indent_test2: simple replacement of a single line
+[source,ml]
+----
+let c = (* ...some one-liner... *)
+let d =
+    (* ...some other one-liner... *)
+----
+
+with:
+
+.some one-liner
+[source,ml]
+----
+42
+----
+
+.some other one-liner
+[source,ml]
+----
+"<- there should be spaces here"
+----
+
+Sub-expansions must cumul indentations:
+
+.Indent_test3: sub-expansions
+[source,ml]
+----
+let a =
+    (* ...yada... *)
+----
+
+.yada
+[source,ml]
+----
+let b = 1 + (* ...yadayada... *)
+----
+
+.yadayada
+[source,ml]
+----
+123123
+----
+

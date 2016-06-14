@@ -1,0 +1,11 @@
+# 34 "indent_tests.adoc"
+let c = 
+# 44 "indent_tests.adoc"
+        42
+# 34 "indent_tests.adoc"
+
+let d =
+# 50 "indent_tests.adoc"
+    "<- there should be spaces here"
+# 36 "indent_tests.adoc"
+

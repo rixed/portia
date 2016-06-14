@@ -1,0 +1,6 @@
+# 7 "indent_tests.adoc"
+let a = 42
+# 15 "indent_tests.adoc"
+let b = 0.314 in
+# 23 "indent_tests.adoc"
+    b *. 10.

@@ -13,3 +13,4 @@ main.fw
 *.log
 all_tests.ml
 pkgConfig.ml
+oUnit-anon.cache
