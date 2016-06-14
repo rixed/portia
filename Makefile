@@ -33,7 +33,7 @@ doc: portia.html
 
 portia.html: $(FW_SOURCES)
 	asciidoc -o $@ intro.fw
-	sed -i -e 's/@@/@/g' $@
+	sed -i .bak -e 's/@@/@/g' $@
 
 # dynamically loaded modules must be rebuild after portia.byte has changed
 $(BACKEND_SOURCES:.ml=.cmo): portia.byte
