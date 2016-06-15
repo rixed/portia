@@ -125,3 +125,8 @@ Add a warning at the beginning of generated files that they are automatically
 generated and should not be edited manually.
 
 Do not output linenum for shell because they mess with the shebang.
+`tests/*.expected` is another case of annoying linenum. Implement `per
+language linenum` as suggested at the end of +config.fw+. In other words,
+`find_definitions` should return the language (the file extension is good
+enough).
+

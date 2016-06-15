@@ -251,7 +251,8 @@ let rec expanded_loc tab loc =
                       indent tab (String.sub unexpanded last_stop
                                              (start - last_stop)) in
             if not need_new_line then (
-                PortiaLog.debug "appended '%s'\n" (String.sub unexpanded last_stop (start - last_stop))
+                PortiaLog.debug "appended '%s'\n"
+                    (String.sub unexpanded last_stop (start - last_stop))
             );
             let txt = if need_new_line then txt ^ "\n" else txt in
 

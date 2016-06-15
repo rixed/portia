@@ -1,4 +1,4 @@
-# 379 "definitions.fw"
+# 380 "definitions.fw"
 open Batteries
 
 # 84 "definitions.fw"
@@ -18,9 +18,9 @@ type id = string
 type t = { locs : location list ; (* reverse order *)
              id : id ;
          output : bool }
-# 381 "definitions.fw"
+# 382 "definitions.fw"
 
-# 291 "definitions.fw"
+# 292 "definitions.fw"
 let indent =
     let open Str in
     let re = regexp "\n\\([^\n]\\)" in
@@ -59,7 +59,7 @@ let read_file fname offset size =
     read_chunk 0 ;
     close fd ;
     str
-# 382 "definitions.fw"
+# 383 "definitions.fw"
 
 # 182 "definitions.fw"
 let location_in_file file offset size =
@@ -68,7 +68,7 @@ let location_in_file file offset size =
     let colno = colno_at txt
     and lineno = lineno_at offset txt in
     { file ; offset ; size ; mtime ; lineno ; colno }
-# 383 "definitions.fw"
+# 384 "definitions.fw"
 
 # 108 "definitions.fw"
 let location_print fmt loc =
@@ -172,7 +172,8 @@ let rec expanded_loc tab loc =
                       indent tab (String.sub unexpanded last_stop
                                              (start - last_stop)) in
             if not need_new_line then (
-                PortiaLog.debug "appended '%s'\n" (String.sub unexpanded last_stop (start - last_stop))
+                PortiaLog.debug "appended '%s'\n"
+                    (String.sub unexpanded last_stop (start - last_stop))
             );
             let txt = if need_new_line then txt ^ "\n" else txt in
 
@@ -199,5 +200,5 @@ and expanded_body tab t =
     List.rev t.locs |>
     List.map (expanded_loc tab) |>
     String.concat ""
-# 384 "definitions.fw"
+# 385 "definitions.fw"
 

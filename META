@@ -1,4 +1,4 @@
 description = "Literate Programming Preprocessor"
-version = "0.1"
+version = "0.2"
 requires = "batteries"
 archive(byte) = "portia.cma"
