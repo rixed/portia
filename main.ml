@@ -1,14 +1,10 @@
-# 96 "main.fw"
 open Batteries
 
-# 51 "main.fw"
 let load_lib libdir fname =
     let libname = libdir ^"/"^ fname ^".cmo" in
     PortiaLog.debug "loading lib %s\n" libname ;
     Dynlink.(loadfile (adapt_filename libname))
-# 98 "main.fw"
 
-# 66 "main.fw"
 let main =
     let plugins = ref [] in
     let libdir = ref PkgConfig.plugindir in
@@ -31,12 +27,9 @@ let main =
          portia [options] files...\n\
          Will output source code from given files.\n") ;
     if !plugins = [] then addlst plugins "funnelweb" ; (* default syntax *)
-# 32 "main.fw"
     
     List.iter (load_lib !libdir) !plugins ;
     List.iter PortiaParse.parse !srcfiles ;
     Output.all ()
-# 88 "main.fw"
-
-# 99 "main.fw"
+    
 

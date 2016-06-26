@@ -1,7 +1,5 @@
-# 35 "output.fw"
 open Batteries
 
-# 11 "output.fw"
 open PortiaDefinition
 
 (* output a given definition *)
@@ -18,5 +16,4 @@ let definition filename def =
 (* output all registered definitions *)
 let all () =
     Hashtbl.iter definition registry
-# 37 "output.fw"
 

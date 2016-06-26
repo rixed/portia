@@ -1,4 +1,3 @@
-# 27 "config.fw"
 let find_definitions =
     ref ((fun _txt -> []) : string -> (string * bool * int * int) list)
 let find_references =
