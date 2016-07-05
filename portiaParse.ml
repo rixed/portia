@@ -1,5 +1,7 @@
+# 46 "parsing.fw"
 open Batteries
 
+# 25 "parsing.fw"
 let read_whole_file file =
     let ic = Unix.(openfile file [O_RDONLY] 0 |> input_of_descr) in
     IO.read_all ic (* autoclosed *)
@@ -12,7 +14,9 @@ let rec parse file =
         PortiaDefinition.add id output file start (stop-start)) ;
     !PortiaConfig.find_inclusions txt |>
     List.iter parse
+# 48 "parsing.fw"
 
+# 99 "parsing.fw"
 let fold_all_groups f p re str =
     let open Str in
     let rec aux p o =
@@ -29,4 +33,5 @@ let fold_all_groups f p re str =
         with Not_found ->
             p in
     aux p 0 |> List.rev
+# 49 "parsing.fw"
 

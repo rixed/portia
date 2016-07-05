@@ -2,13 +2,22 @@
 
 == Output
 
-Once all definitions have been registered we can iterate over all which must be
-output into a file, retrieve its expanded body then write it into the file:
+Once all definitions have been gathered we can iterate over all of those which
+must be written into a file, retrieve their (expanded) body then write it into
+that file. We will not directly overwrite the destination file, though, rather
+create a temporary file and replace the older file only if the new one is
+different.  We do this to avoid unnecessary touching files, thus triggering
+whole rebuilds, each time a single compilation unit is effectively modified.
 
 [source,ml]
 ----
 @$@<Output@>==@{@-
 open PortiaDefinition
+
+let read_file filename =
+  (BatFile.lines_of filename |>
+   List.of_enum |>
+   String.concat "\n") ^ "\n"
 
 (* output a given definition *)
 let definition filename def =
@@ -16,7 +25,13 @@ let definition filename def =
         PortiaLog.debug "Generating %s...\n%!" filename ;
         let text = expanded_body 0 def |>
                    !PortiaConfig.postprocess in
-        output_file ~filename ~text
+        let content_is_new = match read_file filename with
+        | exception _ -> true
+        | old_text -> old_text <> text in
+        if content_is_new then (
+          PortiaLog.debug "Writing output file %s\n" filename ;
+          output_file ~filename ~text
+        ) else PortiaLog.debug "Skipping same file %s\n" filename
     ) else (
         PortiaLog.debug "No output file for %s\n%!" filename
     )

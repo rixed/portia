@@ -1,16 +1,26 @@
+# 380 "definitions.fw"
 open Batteries
 
+# 84 "definitions.fw"
+# 48 "definitions.fw"
 type location = { file : string ;
                  mtime : float ;
                 lineno : int ;
                  colno : int ;
                 offset : int ;
                   size : int }
+# 84 "definitions.fw"
+
+# 69 "definitions.fw"
 type id = string
+# 85 "definitions.fw"
+
 type t = { locs : location list ; (* reverse order *)
              id : id ;
          output : bool }
+# 382 "definitions.fw"
 
+# 292 "definitions.fw"
 let indent =
     let open Str in
     let re = regexp "\n\\([^\n]\\)" in
@@ -49,14 +59,18 @@ let read_file fname offset size =
     read_chunk 0 ;
     close fd ;
     str
+# 383 "definitions.fw"
 
+# 182 "definitions.fw"
 let location_in_file file offset size =
     let mtime = Unix.((stat file).st_mtime) in
     let txt = read_file file 0 offset in
     let colno = colno_at txt
     and lineno = lineno_at offset txt in
     { file ; offset ; size ; mtime ; lineno ; colno }
+# 384 "definitions.fw"
 
+# 108 "definitions.fw"
 let location_print fmt loc =
     Printf.fprintf fmt "%s:%d.%d-%d"
         loc.file loc.lineno loc.colno (loc.colno+loc.size)
@@ -71,6 +85,7 @@ let rec locations_print fmt = function
 
 let print fmt t =
     Printf.fprintf fmt "%s@%a" t.id locations_print t.locs
+# 131 "definitions.fw"
 exception FileChanged of string
 let fetch_loc loc =
     let open Unix in
@@ -78,6 +93,7 @@ let fetch_loc loc =
     if (stat fname).st_mtime > loc.mtime then
         raise (FileChanged fname) ;
     read_file fname loc.offset loc.size
+# 150 "definitions.fw"
 
 let ignore_missing = ref false
 
@@ -100,6 +116,7 @@ let lookup id =
             Printf.fprintf stderr "Cannot find definition for '%s'\n" id ;
             exit 1
         )
+# 199 "definitions.fw"
 
 let line_start txt offset =
     let rec loop c =
@@ -183,4 +200,5 @@ and expanded_body tab t =
     List.rev t.locs |>
     List.map (expanded_loc tab) |>
     String.concat ""
+# 385 "definitions.fw"
 

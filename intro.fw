@@ -107,13 +107,7 @@ include::misc.fw[]
 
 == TODO
 
-Do not change the +ctime+ of a generated file when the content is the same.
-This is to avoid Makefile rebuilding unnecessary files.  Can be done by first
-generating into a temp file and then comparing the sizes and content of the
-file.  May be guarded by an option?
-
-Alternatively, a mode in which portia just output Makefile compliant
-dependencies.
+A mode in which portia just output Makefile compliant dependencies.
 
 Indenting the generated source code makes column positions reported by
 compilers (and other tools such as annot for OCaml) different from the one in
