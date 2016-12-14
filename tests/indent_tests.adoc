@@ -1,7 +1,7 @@
 Appending of definitions must not alter indentation in any way
 but just concatenate the lines:
 
-.Indent_test1: the first definition
+.Indent_test1.ml: the first definition
 [source,ml]
 ----
 let a = 42
@@ -9,7 +9,7 @@ let a = 42
 
 This should be left justified:
 
-.Indent_test1: another definition
+.Indent_test1.ml: another definition
 [source,ml]
 ----
 let b = 0.314 in
@@ -17,7 +17,7 @@ let b = 0.314 in
 
 Starting indent must be kept:
 
-.Indent_test1: indented chunk
+.Indent_test1.ml: indented chunk
 [source,ml]
 ----
     b *. 10.
@@ -28,7 +28,7 @@ And we should get this:
 Replacing placeholders, though, must be smarter than that.
 We must indent them to match where they start.
 
-.Indent_test2: simple replacement of a single line
+.Indent_test2.ml: simple replacement of a single line
 [source,ml]
 ----
 let c = (* ...some one-liner... *)
@@ -52,7 +52,7 @@ with:
 
 Sub-expansions must cumul indentations:
 
-.Indent_test3: sub-expansions
+.Indent_test3.ml: sub-expansions
 [source,ml]
 ----
 let a =

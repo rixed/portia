@@ -52,17 +52,15 @@ let find_code_definitions =
                          "----\n") in
     fold_all_groups (fun l p ->
         match l with
-            | Some (id,_,_)::Some _::Some (lang,_,_)::
-              Some (_def, start, stop)::_ ->
-                (id ^ "." ^ ext_of_lang lang, true, start, stop)::p
-            | Some (id,_,_)::None::_::Some (_def, start, stop)::_ ->
-                (id, false, start, stop)::p
+            | Some (id,_,_)::_::Some (lang,_,_)::Some (_def, start, stop)::_ ->
+                let is_file = String.ends_with id ("." ^ ext_of_lang lang) in
+                (id, is_file, start, stop) :: p
             | _ -> assert false) [] re
 
 (*$= find_code_definitions & ~printer:dump
-  [ "Foo.ml", true, 27, 34 ] \
+  [ "Foo.ml", true, 30, 37 ] \
   (find_code_definitions \
-    ".Foo: bar\n\\
+    ".Foo.ml: bar\n\\
      [source,ml]\n\\
      ----\n\\
      glop.\n\\
@@ -70,6 +68,14 @@ let find_code_definitions =
      ----\n\\
      I'm out!\n\\
      ----\n")
+ [ "Foo", false, 27, 38 ] \
+ (find_code_definitions \
+   ".Foo: bar\n\\
+    [source,ml]\n\\
+    ----\n\\
+    pas glop.\n\\
+    \n\\
+    ----\n")
 *)
 
 let find_file_content =
@@ -122,3 +128,12 @@ understood by asciidoc (actually, by `GNU source-highlight`, its default source
 code highlighter) back to file extension. Most of the time, though, asciidoc
 also understand the file extension itself so we assume that's what's specified
 in the `source` command to make this function shorter.
+
+Notice that for `find_references` we use a format that conveniently (for OCaml
+programmers) looks like OCaml comments. Since those expansion points will be
+completely replaced by their definition it does not really matter and those
+would of course work just as well regardless of the language used around. One
+may prefer to use comments for that language in order not to confuse the
+documentation generator when syntax-highlighting the code bloc. Therefore, it
+would be nice to allow for more comment style here, or to pick the proper one
+from another configuration file...

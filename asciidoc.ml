@@ -16,17 +16,15 @@ let find_code_definitions =
                          "----\n") in
     fold_all_groups (fun l p ->
         match l with
-            | Some (id,_,_)::Some _::Some (lang,_,_)::
-              Some (_def, start, stop)::_ ->
-                (id ^ "." ^ ext_of_lang lang, true, start, stop)::p
-            | Some (id,_,_)::None::_::Some (_def, start, stop)::_ ->
-                (id, false, start, stop)::p
+            | Some (id,_,_)::_::Some (lang,_,_)::Some (_def, start, stop)::_ ->
+                let is_file = String.ends_with id ("." ^ ext_of_lang lang) in
+                (id, is_file, start, stop) :: p
             | _ -> assert false) [] re
 
 (*$= find_code_definitions & ~printer:dump
-  [ "Foo.ml", true, 27, 34 ] \
+  [ "Foo.ml", true, 30, 37 ] \
   (find_code_definitions \
-    ".Foo: bar\n\\
+    ".Foo.ml: bar\n\\
      [source,ml]\n\\
      ----\n\\
      glop.\n\\
@@ -34,6 +32,14 @@ let find_code_definitions =
      ----\n\\
      I'm out!\n\\
      ----\n")
+ [ "Foo", false, 27, 38 ] \
+ (find_code_definitions \
+   ".Foo: bar\n\\
+    [source,ml]\n\\
+    ----\n\\
+    pas glop.\n\\
+    \n\\
+    ----\n")
 *)
 
 let find_file_content =
