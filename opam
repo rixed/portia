@@ -18,3 +18,4 @@ depexts: [
 post-messages: [
   "This package requires asciidoc to build the doc." {failure}
 ]
+available: [ocaml-version >= "4.02.0"]
