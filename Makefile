@@ -1,6 +1,6 @@
-all: notations.html portia.html
+all: notations.html index.html
 
-portia.html: ../portia/portia.html
+index.html: ../portia/portia.html
 	cp -f $< $@
 
 notations.html: notations.txt
