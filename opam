@@ -3,14 +3,20 @@ name: "portia"
 version: "1.0"
 maintainer: "Cedric Cellier <rixed@happyleptic.org>"
 authors: "Cedric Cellier <rixed@happyleptic.org>"
-homepage: "http://pim.happyleptic.org/~rixed/portia.html"
+homepage: "https://github.com/rixed/portia"
+doc: "http://rixed.github.io/portia/"
 dev-repo: "https://github.com/rixed/portia.git"
 bug-reports: "mailto:rixed-opam@happyleptic.org"
 build: [[make]]
 build-doc: [[make "doc"]]
+build-test: [[make "check"]]
 install: [make "install"]
 remove: ["ocamlfind" "remove" "portia"]
-depends: ["ocamlfind" "batteries"]
+depends: [
+  "ocamlfind"
+  "batteries"
+  "qtest" {test}
+]
 depexts: [
   [["debian"] ["asciidoc"]]
   [["ubuntu"] ["asciidoc"]]
