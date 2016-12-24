@@ -881,7 +881,7 @@ http://www.gnu.org/software/src-highlite -->
 <pre><tt>@$@<span style="color: #990000">&lt;</span><span style="color: #009900">EntryPoint</span>@<span style="color: #990000">&gt;==</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
 <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> main <span style="color: #990000">=</span>
     <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> plugins <span style="color: #990000">=</span> <span style="color: #009900">ref</span> <span style="color: #990000">[]</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
-    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> libdir <span style="color: #990000">=</span> <span style="color: #009900">ref</span> <span style="color: #FF0000">"/usr/lib/portia"</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> libdir <span style="color: #990000">=</span> <span style="color: #009900">ref</span> <span style="font-weight: bold"><span style="color: #000080">PkgConfig</span></span><span style="color: #990000">.</span>plugindir <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
     <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> srcfiles <span style="color: #990000">=</span> <span style="color: #009900">ref</span> <span style="color: #990000">[]</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
     <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> addlst l s <span style="color: #990000">=</span> l <span style="color: #990000">:=</span> s <span style="color: #990000">::</span> <span style="color: #990000">!</span>l <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
     <span style="font-weight: bold"><span style="color: #000080">Arg</span></span><span style="color: #990000">.(</span>parse
@@ -890,11 +890,11 @@ http://www.gnu.org/software/src-highlite -->
                       <span style="color: #990000">(</span>default <span style="font-weight: bold"><span style="color: #0000FF">to</span></span> funnelweb<span style="color: #990000">)</span>" <span style="color: #990000">;</span>
           <span style="color: #FF0000">"-libdir"</span><span style="color: #990000">,</span> <span style="color: #009900">Set_string</span> libdir<span style="color: #990000">,</span>
                      <span style="color: #FF0000">"Where to read plugins from"</span> <span style="color: #990000">;</span>
+          <span style="color: #FF0000">"-ignore-missing"</span><span style="color: #990000">,</span> <span style="color: #009900">Set</span> <span style="font-weight: bold"><span style="color: #000080">PortiaDefinition</span></span><span style="color: #990000">.</span>ignore_missing<span style="color: #990000">,</span>
+                     "<span style="color: #009900">Referenced</span>  but never defined blocks are not <span style="color: #990000">\</span>
+                      an error" <span style="color: #990000">;</span>
           <span style="color: #FF0000">"-debug"</span><span style="color: #990000">,</span>  <span style="color: #009900">Set</span> <span style="font-weight: bold"><span style="color: #000080">PortiaLog</span></span><span style="color: #990000">.</span>verbose<span style="color: #990000">,</span>
-                     <span style="color: #FF0000">"Output debug messages"</span> <span style="color: #990000">;</span>
-          <span style="color: #FF0000">"-ignore-missing"</span><span style="color: #990000">,</span>
-                     <span style="color: #009900">Set</span> <span style="font-weight: bold"><span style="color: #000080">PortiaDefinition</span></span><span style="color: #990000">.</span>ignore_missing<span style="color: #990000">,</span>
-                     <span style="color: #FF0000">"Ignore missing definitions"</span> <span style="color: #990000">]</span>
+                     <span style="color: #FF0000">"Output debug messages"</span> <span style="color: #990000">]</span>
         <span style="color: #990000">(</span>addlst srcfiles<span style="color: #990000">)</span>
         "portia <span style="color: #990000">-</span> literate programming preprocessor<span style="color: #990000">\</span>n<span style="color: #990000">\</span>
          <span style="color: #990000">\</span>n<span style="color: #990000">\</span>
@@ -1019,9 +1019,10 @@ http://www.gnu.org/software/src-highlite -->
              id <span style="color: #990000">:</span> id <span style="color: #990000">;</span>
          output <span style="color: #990000">:</span> <span style="color: #009900">bool</span> <span style="color: #FF0000">}</span>
 @<span style="color: #FF0000">}</span></tt></pre></div></div>
-<div class="paragraph"><p>Notice that it&#8217;s possible that there is no location at all (empty list), meaning
-the definition was missing (might be conveniently allowed with <code>ignore_missing</code> flag,
-to make it possible to generate a valid program and write the extensions later on).</p></div>
+<div class="paragraph"><p>Notice that it&#8217;s possible that there is no location at all (empty list),
+meaning the definition was missing (might be conveniently allowed with
+<code>ignore_missing</code> flag, to make it possible to generate a valid program and
+write the extensions later on).</p></div>
 <div class="paragraph"><p>It&#8217;s always a good idea to write proper printers for any new type. This may
 looks fastidious but you are actually doing yourself a favor: better have these
 printers ready before they are needed than to have to write them quickly while
@@ -1125,52 +1126,88 @@ by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
 <pre><tt>@$@<span style="color: #990000">&lt;</span><span style="color: #009900">Definitions</span>@<span style="color: #990000">&gt;+=</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
+
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> line_start txt offset <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> <span style="font-weight: bold"><span style="color: #0000FF">rec</span></span> loop c <span style="color: #990000">=</span>
+        <span style="font-weight: bold"><span style="color: #0000FF">if</span></span> c <span style="color: #990000">&lt;</span> <span style="color: #993399">1</span> <span style="color: #990000">||</span> txt<span style="color: #990000">.[</span>c<span style="color: #990000">-</span><span style="color: #993399">1</span><span style="color: #990000">]</span> <span style="color: #990000">=</span> '<span style="color: #990000">\</span>n' <span style="font-weight: bold"><span style="color: #0000FF">then</span></span> c
+        <span style="font-weight: bold"><span style="color: #0000FF">else</span></span> loop <span style="color: #990000">(</span>c<span style="color: #990000">-</span><span style="color: #993399">1</span><span style="color: #990000">)</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> start_pos <span style="color: #990000">=</span> loop offset <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    <span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>sub txt start_pos <span style="color: #990000">(</span>offset <span style="color: #990000">-</span> start_pos<span style="color: #990000">)</span>
+
+<span style="font-style: italic"><span style="color: #9A1900">(*$= line_start &amp; ~printer:identity</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">  (line_start "glop" 0) ""</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">  (line_start "glop" 2) "gl"</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">  (line_start "glop\npas glop\n" 4) "glop"</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">  (line_start "glop\npas glop\n" 5) ""</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">  (line_start "glop\npas glop\n" 7) "pa"</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">*)</span></span>
+
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> indent_at unexpanded start <span style="color: #990000">=</span>
+    line_start unexpanded start <span style="color: #990000">|&gt;</span>
+    <span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>fold_left <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #0000FF">fun</span></span> <span style="color: #990000">(</span>need_nl<span style="color: #990000">,</span> len<span style="color: #990000">)</span> c <span style="color: #990000">-&gt;</span>
+        <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #0000FF">if</span></span> <span style="font-weight: bold"><span style="color: #000080">Char</span></span><span style="color: #990000">.</span>is_whitespace c <span style="font-weight: bold"><span style="color: #0000FF">then</span></span> need_nl <span style="font-weight: bold"><span style="color: #0000FF">else</span></span> <span style="font-weight: bold"><span style="color: #0000FF">true</span></span><span style="color: #990000">),</span>
+        len<span style="color: #990000">+</span><span style="color: #993399">1</span><span style="color: #990000">)</span> <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #0000FF">false</span></span><span style="color: #990000">,</span> <span style="color: #993399">0</span><span style="color: #990000">)</span>
+
+<span style="font-style: italic"><span style="color: #9A1900">(*$= indent_at &amp; ~printer:dump</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">  (indent_at "glop" 0) (false, 0)</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">  (indent_at "glop" 2) (true, 2)</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">  (indent_at "glop\npas glop\n" 4) (true, 4)</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">  (indent_at "glop\npas glop\n" 5) (false, 0)</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">  (indent_at "glop\npas glop\n" 7) (true, 2)</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">*)</span></span>
+
 <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> <span style="font-weight: bold"><span style="color: #0000FF">rec</span></span> expanded_loc tab loc <span style="color: #990000">=</span>
     <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> unexpanded <span style="color: #990000">=</span> fetch_loc loc <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
     <span style="font-weight: bold"><span style="color: #000080">PortiaLog</span></span><span style="color: #990000">.</span>debug <span style="color: #FF0000">"expand '%s'\n"</span> unexpanded <span style="color: #990000">;</span>
+    <span style="font-style: italic"><span style="color: #9A1900">(* Start with line number information. *)</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> txt <span style="color: #990000">=</span> <span style="color: #990000">!</span><span style="font-weight: bold"><span style="color: #000080">PortiaConfig</span></span><span style="color: #990000">.</span>linenum loc<span style="color: #990000">.</span>lineno loc<span style="color: #990000">.</span>file <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
     <span style="font-style: italic"><span style="color: #9A1900">(* find_references returns a list of (id, start_offset, stop_offset) *)</span></span>
-    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> refs <span style="color: #990000">=</span> <span style="color: #990000">!</span><span style="font-weight: bold"><span style="color: #000080">PortiaConfig</span></span><span style="color: #990000">.</span>find_references unexpanded <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
-    <span style="font-style: italic"><span style="color: #9A1900">(* TODO: sort this list according to start_offset *)</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> refs <span style="color: #990000">=</span> <span style="color: #990000">!</span><span style="font-weight: bold"><span style="color: #000080">PortiaConfig</span></span><span style="color: #990000">.</span>find_references unexpanded <span style="color: #990000">|&gt;</span>
+               <span style="font-weight: bold"><span style="color: #000080">List</span></span><span style="color: #990000">.</span>sort <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #0000FF">fun</span></span> <span style="color: #990000">(</span>_<span style="color: #990000">,</span>o1<span style="color: #990000">,</span>_<span style="color: #990000">)</span> <span style="color: #990000">(</span>_<span style="color: #990000">,</span>o2<span style="color: #990000">,</span>_<span style="color: #990000">)</span> <span style="color: #990000">-&gt;</span> compare o1 o2<span style="color: #990000">)</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
     <span style="font-weight: bold"><span style="color: #000080">PortiaLog</span></span><span style="color: #990000">.</span>debug <span style="color: #FF0000">"found references: %a\n"</span>
         <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #000080">List</span></span><span style="color: #990000">.</span>print <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #000080">Tuple3</span></span><span style="color: #990000">.</span>print <span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>print <span style="font-weight: bold"><span style="color: #000080">Int</span></span><span style="color: #990000">.</span>print <span style="font-weight: bold"><span style="color: #000080">Int</span></span><span style="color: #990000">.</span>print<span style="color: #990000">))</span> refs <span style="color: #990000">;</span>
-    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> txt<span style="color: #990000">,</span> last_stop<span style="color: #990000">,</span> tab <span style="color: #990000">=</span>
-        <span style="font-weight: bold"><span style="color: #000080">List</span></span><span style="color: #990000">.</span>fold_left <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #0000FF">fun</span></span> <span style="color: #990000">(</span>txt<span style="color: #990000">,</span>last_stop<span style="color: #990000">,</span>tab<span style="color: #990000">)</span> <span style="color: #990000">(</span>id<span style="color: #990000">,</span>start<span style="color: #990000">,</span>stop<span style="color: #990000">)</span> <span style="color: #990000">-&gt;</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> txt<span style="color: #990000">,</span> last_stop <span style="color: #990000">=</span>
+        <span style="font-weight: bold"><span style="color: #000080">List</span></span><span style="color: #990000">.</span>fold_left <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #0000FF">fun</span></span> <span style="color: #990000">(</span>txt<span style="color: #990000">,</span>last_stop<span style="color: #990000">)</span> <span style="color: #990000">(</span>id<span style="color: #990000">,</span>start<span style="color: #990000">,</span>stop<span style="color: #990000">)</span> <span style="color: #990000">-&gt;</span>
             <span style="font-weight: bold"><span style="color: #0000FF">assert</span></span> <span style="color: #990000">(</span>start <span style="color: #990000">&gt;=</span> last_stop<span style="color: #990000">)</span> <span style="color: #990000">;</span>
-            <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> t' <span style="color: #990000">=</span> lookup id <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
-            <span style="font-style: italic"><span style="color: #9A1900">(* Warning: this will indent string literals! *)</span></span>
+            <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> need_new_line<span style="color: #990000">,</span> tab' <span style="color: #990000">=</span> indent_at unexpanded start <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+            <span style="font-style: italic"><span style="color: #9A1900">(* If we do not need a new_line it's because we have only blanks</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">               before the expansion, and we do not want to copy those because</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">               every body must start at column 0 *)</span></span>
+            <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> start <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #0000FF">if</span></span> need_new_line <span style="font-weight: bold"><span style="color: #0000FF">then</span></span> start <span style="font-weight: bold"><span style="color: #0000FF">else</span></span> start <span style="color: #990000">-</span> tab' <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+            <span style="font-weight: bold"><span style="color: #0000FF">if</span></span> not need_new_line <span style="font-weight: bold"><span style="color: #0000FF">then</span></span> <span style="color: #990000">(</span>
+                <span style="font-weight: bold"><span style="color: #000080">PortiaLog</span></span><span style="color: #990000">.</span>debug <span style="color: #FF0000">"no new line needed, tab=%d, tab'=%d\n"</span> tab tab'
+            <span style="color: #990000">)</span> <span style="color: #990000">;</span>
             <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> txt <span style="color: #990000">=</span> txt <span style="color: #990000">^</span>
-                indent tab
-                       <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>sub unexpanded last_stop <span style="color: #990000">(</span>start <span style="color: #990000">-</span> last_stop<span style="color: #990000">))</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
-            <span style="font-style: italic"><span style="color: #9A1900">(* Look for last \n in txt to know how to indent sub-definitions: *)</span></span>
-            <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> txt_pre_nl<span style="color: #990000">,</span> tab' <span style="color: #990000">=</span>
-                <span style="font-weight: bold"><span style="color: #0000FF">try</span></span> <span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>rsplit txt <span style="color: #990000">~</span>by<span style="color: #990000">:</span><span style="color: #FF0000">"\n"</span>
-                <span style="font-weight: bold"><span style="color: #0000FF">with</span></span> <span style="color: #009900">Not_found</span> <span style="color: #990000">-&gt;</span> txt<span style="color: #990000">,</span> <span style="color: #FF0000">""</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
-            <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> txt <span style="color: #990000">=</span> txt_pre_nl <span style="color: #990000">^</span> <span style="color: #FF0000">"\n"</span> <span style="color: #990000">^</span> <span style="color: #990000">(</span>expanded_body tab' t'<span style="color: #990000">)</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+                      indent tab <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>sub unexpanded last_stop
+                                             <span style="color: #990000">(</span>start <span style="color: #990000">-</span> last_stop<span style="color: #990000">))</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+            <span style="font-weight: bold"><span style="color: #0000FF">if</span></span> not need_new_line <span style="font-weight: bold"><span style="color: #0000FF">then</span></span> <span style="color: #990000">(</span>
+                <span style="font-weight: bold"><span style="color: #000080">PortiaLog</span></span><span style="color: #990000">.</span>debug <span style="color: #FF0000">"appended '%s'\n"</span>
+                    <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>sub unexpanded last_stop <span style="color: #990000">(</span>start <span style="color: #990000">-</span> last_stop<span style="color: #990000">))</span>
+            <span style="color: #990000">);</span>
+            <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> txt <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #0000FF">if</span></span> need_new_line <span style="font-weight: bold"><span style="color: #0000FF">then</span></span> txt <span style="color: #990000">^</span> <span style="color: #FF0000">"\n"</span> <span style="font-weight: bold"><span style="color: #0000FF">else</span></span> txt <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+
+            <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> t' <span style="color: #990000">=</span> lookup id <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+            <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> body <span style="color: #990000">=</span> expanded_body <span style="color: #990000">(</span>tab<span style="color: #990000">+</span>tab'<span style="color: #990000">)</span> t' <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+            <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> txt <span style="color: #990000">=</span> txt <span style="color: #990000">^</span> body <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+
             <span style="font-style: italic"><span style="color: #9A1900">(* add a linenum indication that we are back in this block *)</span></span>
             <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> ln <span style="color: #990000">=</span> <span style="color: #990000">!</span><span style="font-weight: bold"><span style="color: #000080">PortiaConfig</span></span><span style="color: #990000">.</span>linenum
                          <span style="color: #990000">(</span>loc<span style="color: #990000">.</span>lineno <span style="color: #990000">+</span> <span style="color: #990000">(</span>lineno_at stop unexpanded<span style="color: #990000">))</span>
                          loc<span style="color: #990000">.</span>file <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
-            txt <span style="color: #990000">^</span>
-            <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #0000FF">if</span></span> <span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>length ln <span style="color: #990000">&gt;</span> <span style="color: #993399">0</span> <span style="color: #990000">&amp;&amp;</span>
-                <span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>length txt <span style="color: #990000">&gt;</span> <span style="color: #993399">0</span> <span style="color: #990000">&amp;&amp;</span>
-                txt<span style="color: #990000">.[</span><span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>length txt <span style="color: #990000">-</span> <span style="color: #993399">1</span><span style="color: #990000">]</span> <span style="color: #990000">!=</span> '<span style="color: #990000">\</span>n' <span style="font-weight: bold"><span style="color: #0000FF">then</span></span>
-                <span style="color: #FF0000">"\n"</span> <span style="font-weight: bold"><span style="color: #0000FF">else</span></span> <span style="color: #FF0000">""</span><span style="color: #990000">)</span> <span style="color: #990000">^</span>
-            ln<span style="color: #990000">,</span> stop<span style="color: #990000">,</span> spaces tab'<span style="color: #990000">)</span>
-            <span style="color: #990000">(</span><span style="color: #FF0000">""</span><span style="color: #990000">,</span> <span style="color: #993399">0</span><span style="color: #990000">,</span> tab<span style="color: #990000">)</span> refs <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+            <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> txt <span style="color: #990000">=</span> txt <span style="color: #990000">^</span>
+                <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #0000FF">if</span></span> <span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>length ln <span style="color: #990000">&gt;</span> <span style="color: #993399">0</span> <span style="color: #990000">&amp;&amp;</span>
+                    <span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>length txt <span style="color: #990000">&gt;</span> <span style="color: #993399">0</span> <span style="color: #990000">&amp;&amp;</span>
+                    txt<span style="color: #990000">.[</span><span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>length txt <span style="color: #990000">-</span> <span style="color: #993399">1</span><span style="color: #990000">]</span> <span style="color: #990000">!=</span> '<span style="color: #990000">\</span>n' <span style="font-weight: bold"><span style="color: #0000FF">then</span></span>
+                    <span style="color: #FF0000">"\n"</span> <span style="font-weight: bold"><span style="color: #0000FF">else</span></span> <span style="color: #FF0000">""</span><span style="color: #990000">)</span> <span style="color: #990000">^</span> ln <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+            txt<span style="color: #990000">,</span> stop<span style="color: #990000">)</span>
+            <span style="color: #990000">(</span>txt<span style="color: #990000">,</span> <span style="color: #993399">0</span><span style="color: #990000">)</span> refs <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
     <span style="font-style: italic"><span style="color: #9A1900">(* Complete with what's left *)</span></span>
     <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> rest <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>length unexpanded <span style="color: #990000">-</span> last_stop <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
-    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> txt <span style="color: #990000">=</span> txt <span style="color: #990000">^</span>
-        indent tab <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>sub unexpanded last_stop rest<span style="color: #990000">)</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
-    <span style="font-style: italic"><span style="color: #9A1900">(* Add line number information. *)</span></span>
-    <span style="color: #990000">!</span><span style="font-weight: bold"><span style="color: #000080">PortiaConfig</span></span><span style="color: #990000">.</span>linenum loc<span style="color: #990000">.</span>lineno loc<span style="color: #990000">.</span>file <span style="color: #990000">^</span> txt
+    txt <span style="color: #990000">^</span> indent tab <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>sub unexpanded last_stop rest<span style="color: #990000">)</span>
 
 <span style="font-weight: bold"><span style="color: #0000FF">and</span></span> expanded_body tab t <span style="color: #990000">=</span>
-    <span style="font-style: italic"><span style="color: #9A1900">(* If there is no definitions return the tabulation. Not doing so would</span></span>
-<span style="font-style: italic"><span style="color: #9A1900">       make beginning of line (maybe not bank) disappear. *)</span></span>
-    <span style="font-weight: bold"><span style="color: #0000FF">if</span></span> t<span style="color: #990000">.</span>locs <span style="color: #990000">=</span> <span style="color: #990000">[]</span> <span style="font-weight: bold"><span style="color: #0000FF">then</span></span> tab <span style="font-weight: bold"><span style="color: #0000FF">else</span></span>
     <span style="font-weight: bold"><span style="color: #000080">List</span></span><span style="color: #990000">.</span>rev t<span style="color: #990000">.</span>locs <span style="color: #990000">|&gt;</span>
-    <span style="font-weight: bold"><span style="color: #000080">List</span></span><span style="color: #990000">.</span>mapi <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #0000FF">fun</span></span> i loc <span style="color: #990000">-&gt;</span>
-        expanded_loc <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #0000FF">if</span></span> i<span style="color: #990000">=</span><span style="color: #993399">0</span> <span style="font-weight: bold"><span style="color: #0000FF">then</span></span> tab <span style="font-weight: bold"><span style="color: #0000FF">else</span></span> spaces tab<span style="color: #990000">)</span> loc<span style="color: #990000">)</span> <span style="color: #990000">|&gt;</span>
+    <span style="font-weight: bold"><span style="color: #000080">List</span></span><span style="color: #990000">.</span>map <span style="color: #990000">(</span>expanded_loc tab<span style="color: #990000">)</span> <span style="color: #990000">|&gt;</span>
     <span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>concat <span style="color: #FF0000">""</span>
 @<span style="color: #FF0000">}</span></tt></pre></div></div>
 <div class="paragraph"><p>Where each substituted definition is properly indented according to its
@@ -1182,14 +1219,17 @@ by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
 <pre><tt>@$@<span style="color: #990000">&lt;</span><span style="color: #009900">TxtHelpers</span>@<span style="color: #990000">&gt;==</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
-<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> spaces tab <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>make <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>length tab<span style="color: #990000">)</span> ' '
-
 <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> indent <span style="color: #990000">=</span>
     <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> <span style="font-weight: bold"><span style="color: #000080">open</span></span> <span style="color: #009900">Str</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
     <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> re <span style="color: #990000">=</span> regexp <span style="color: #FF0000">"\n\\([^\n]\\)"</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
     <span style="font-weight: bold"><span style="color: #0000FF">fun</span></span> tab str <span style="color: #990000">-&gt;</span>
-        <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> tab' <span style="color: #990000">=</span> spaces tab <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
-        tab <span style="color: #990000">^</span> global_replace re <span style="color: #990000">(</span><span style="color: #FF0000">"\n"</span><span style="color: #990000">^</span> tab' <span style="color: #990000">^</span><span style="color: #FF0000">"\\1"</span><span style="color: #990000">)</span> str
+        <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> spaces <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>make tab ' ' <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+        spaces <span style="color: #990000">^</span> global_replace re <span style="color: #990000">(</span><span style="color: #FF0000">"\n"</span><span style="color: #990000">^</span> spaces <span style="color: #990000">^</span><span style="color: #FF0000">"\\1"</span><span style="color: #990000">)</span> str
+
+<span style="font-style: italic"><span style="color: #9A1900">(*$= indent &amp; ~printer:identity</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">  "glop"   (indent 0 "glop")</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">  "  glop" (indent 2 "glop")</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">*)</span></span>
 
 <span style="font-style: italic"><span style="color: #9A1900">(* first char is at column 0 *)</span></span>
 <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> colno_at txt <span style="color: #990000">=</span>
@@ -1210,10 +1250,12 @@ http://www.gnu.org/software/src-highlite -->
     <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> fd <span style="color: #990000">=</span> openfile fname <span style="color: #990000">[</span><span style="color: #009900">O_RDONLY</span><span style="color: #990000">]</span> <span style="color: #993399">0</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
     lseek fd offset <span style="color: #009900">SEEK_SET</span> <span style="color: #990000">|&gt;</span> ignore <span style="color: #990000">;</span>
     <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> str <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>create size <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
-    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> act_sz <span style="color: #990000">=</span> read fd str <span style="color: #993399">0</span> size <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> <span style="font-weight: bold"><span style="color: #0000FF">rec</span></span> read_chunk prev <span style="color: #990000">=</span>
+        <span style="font-weight: bold"><span style="color: #0000FF">if</span></span> prev <span style="color: #990000">&lt;</span> size <span style="font-weight: bold"><span style="color: #0000FF">then</span></span>
+            <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> act_sz <span style="color: #990000">=</span> read fd str prev <span style="color: #990000">(</span>size<span style="color: #990000">-</span>prev<span style="color: #990000">)</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+            read_chunk <span style="color: #990000">(</span>prev <span style="color: #990000">+</span> act_sz<span style="color: #990000">)</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    read_chunk <span style="color: #993399">0</span> <span style="color: #990000">;</span>
     close fd <span style="color: #990000">;</span>
-    <span style="font-style: italic"><span style="color: #9A1900">(* no short read on ordinary files *)</span></span>
-    <span style="font-weight: bold"><span style="color: #0000FF">assert</span></span> <span style="color: #990000">(</span>act_sz <span style="color: #990000">=</span> size<span style="color: #990000">)</span> <span style="color: #990000">;</span>
     str
 @<span style="color: #FF0000">}</span></tt></pre></div></div>
 <div class="paragraph"><p>Regarding linenum, this function depends on the programming language
@@ -1500,8 +1542,12 @@ http://www.gnu.org/software/src-highlite -->
 <div class="sect1">
 <h2 id="_output">6. Output</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>Once all definitions have been registered we can iterate over all which must be
-output into a file, retrieve its expanded body then write it into the file:</p></div>
+<div class="paragraph"><p>Once all definitions have been gathered we can iterate over all of those which
+must be written into a file, retrieve their (expanded) body then write it into
+that file. We will not directly overwrite the destination file, though, rather
+create a temporary file and replace the older file only if the new one is
+different.  We do this to avoid unnecessary touching files, thus triggering
+whole rebuilds, each time a single compilation unit is effectively modified.</p></div>
 <div class="listingblock">
 <div class="content"><!-- Generator: GNU source-highlight 3.1.8
 by Lorenzo Bettini
@@ -1510,13 +1556,24 @@ http://www.gnu.org/software/src-highlite -->
 <pre><tt>@$@<span style="color: #990000">&lt;</span><span style="color: #009900">Output</span>@<span style="color: #990000">&gt;==</span>@<span style="color: #FF0000">{</span>@<span style="color: #990000">-</span>
 <span style="font-weight: bold"><span style="color: #000080">open</span></span> <span style="color: #009900">PortiaDefinition</span>
 
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> read_file filename <span style="color: #990000">=</span>
+  <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #000080">BatFile</span></span><span style="color: #990000">.</span>lines_of filename <span style="color: #990000">|&gt;</span>
+   <span style="font-weight: bold"><span style="color: #000080">List</span></span><span style="color: #990000">.</span>of_enum <span style="color: #990000">|&gt;</span>
+   <span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>concat <span style="color: #FF0000">"\n"</span><span style="color: #990000">)</span> <span style="color: #990000">^</span> <span style="color: #FF0000">"\n"</span>
+
 <span style="font-style: italic"><span style="color: #9A1900">(* output a given definition *)</span></span>
 <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> definition filename def <span style="color: #990000">=</span>
     <span style="font-weight: bold"><span style="color: #0000FF">if</span></span> def<span style="color: #990000">.</span>output <span style="font-weight: bold"><span style="color: #0000FF">then</span></span> <span style="color: #990000">(</span>
         <span style="font-weight: bold"><span style="color: #000080">PortiaLog</span></span><span style="color: #990000">.</span>debug <span style="color: #FF0000">"Generating %s...\n%!"</span> filename <span style="color: #990000">;</span>
-        <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> text <span style="color: #990000">=</span> expanded_body <span style="color: #FF0000">""</span> def <span style="color: #990000">|&gt;</span>
+        <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> text <span style="color: #990000">=</span> expanded_body <span style="color: #993399">0</span> def <span style="color: #990000">|&gt;</span>
                    <span style="color: #990000">!</span><span style="font-weight: bold"><span style="color: #000080">PortiaConfig</span></span><span style="color: #990000">.</span>postprocess <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
-        output_file <span style="color: #990000">~</span>filename <span style="color: #990000">~</span>text
+        <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> content_is_new <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #0000FF">match</span></span> read_file filename <span style="font-weight: bold"><span style="color: #0000FF">with</span></span>
+        <span style="color: #990000">|</span> <span style="font-weight: bold"><span style="color: #0000FF">exception</span></span> _ <span style="color: #990000">-&gt;</span> <span style="font-weight: bold"><span style="color: #0000FF">true</span></span>
+        <span style="color: #990000">|</span> old_text <span style="color: #990000">-&gt;</span> old_text <span style="color: #990000">&lt;&gt;</span> text <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+        <span style="font-weight: bold"><span style="color: #0000FF">if</span></span> content_is_new <span style="font-weight: bold"><span style="color: #0000FF">then</span></span> <span style="color: #990000">(</span>
+          <span style="font-weight: bold"><span style="color: #000080">PortiaLog</span></span><span style="color: #990000">.</span>debug <span style="color: #FF0000">"Writing output file %s\n"</span> filename <span style="color: #990000">;</span>
+          output_file <span style="color: #990000">~</span>filename <span style="color: #990000">~</span>text
+        <span style="color: #990000">)</span> <span style="font-weight: bold"><span style="color: #0000FF">else</span></span> <span style="font-weight: bold"><span style="color: #000080">PortiaLog</span></span><span style="color: #990000">.</span>debug <span style="color: #FF0000">"Skipping same file %s\n"</span> filename
     <span style="color: #990000">)</span> <span style="font-weight: bold"><span style="color: #0000FF">else</span></span> <span style="color: #990000">(</span>
         <span style="font-weight: bold"><span style="color: #000080">PortiaLog</span></span><span style="color: #990000">.</span>debug <span style="color: #FF0000">"No output file for %s\n%!"</span> filename
     <span style="color: #990000">)</span>
@@ -1644,18 +1701,52 @@ http://www.gnu.org/software/src-highlite -->
 <span style="font-weight: bold"><span style="color: #000080">open</span></span> <span style="color: #009900">Batteries</span>
 <span style="font-weight: bold"><span style="color: #000080">open</span></span> <span style="color: #009900">PortiaParse</span>
 
-<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> find_ml_definitions <span style="color: #990000">=</span>
-    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> re <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #000080">Str</span></span><span style="color: #990000">.</span>regexp <span style="color: #FF0000">"^\\.\\([^:\n]+\\)\\(:[^\n]*\\)?\n\\[source,ml\\]\n----\n\\(\\(\\([^-\n].*\\)?\n\\)+\\)----\n"</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> ext_of_lang <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #0000FF">function</span></span>
+    <span style="color: #990000">|</span> <span style="color: #FF0000">"shell"</span> <span style="color: #990000">|</span> <span style="color: #FF0000">"bash"</span> <span style="color: #990000">|</span> <span style="color: #FF0000">"csh"</span> <span style="color: #990000">-&gt;</span> <span style="color: #FF0000">"sh"</span>
+    <span style="color: #990000">|</span> <span style="color: #FF0000">"autoconf"</span> <span style="color: #990000">-&gt;</span> <span style="color: #FF0000">"m4"</span>
+    <span style="color: #990000">|</span> <span style="color: #FF0000">"docbook"</span> <span style="color: #990000">-&gt;</span> <span style="color: #FF0000">"xml"</span>
+    <span style="color: #990000">|</span> x <span style="color: #990000">-&gt;</span> x
+
+<span style="font-weight: bold"><span style="color: #0000FF">let</span></span> find_code_definitions <span style="color: #990000">=</span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> re <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #000080">Str</span></span><span style="color: #990000">.</span>regexp <span style="color: #990000">(</span><span style="color: #FF0000">"^\\.\\([^:\n]+\\)\\(:[^\n]*\\)?\n"</span> <span style="color: #990000">^</span>
+                         <span style="color: #FF0000">"\\[source,\\([^]]+\\)\\]\n"</span> <span style="color: #990000">^</span>
+                         <span style="color: #FF0000">"----\n"</span> <span style="color: #990000">^</span>
+                         <span style="color: #FF0000">"\\(\\(\\([^-\n].*\\)?\n\\)+\\)"</span> <span style="color: #990000">^</span>
+                         <span style="color: #FF0000">"----\n"</span><span style="color: #990000">)</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
     fold_all_groups <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #0000FF">fun</span></span> l p <span style="color: #990000">-&gt;</span>
         <span style="font-weight: bold"><span style="color: #0000FF">match</span></span> l <span style="font-weight: bold"><span style="color: #0000FF">with</span></span>
-            <span style="color: #990000">|</span> <span style="color: #009900">Some</span> <span style="color: #990000">(</span>id<span style="color: #990000">,</span>_<span style="color: #990000">,</span>_<span style="color: #990000">)::</span><span style="color: #009900">Some</span> _<span style="color: #990000">::</span><span style="color: #009900">Some</span> <span style="color: #990000">(</span>_def<span style="color: #990000">,</span> start<span style="color: #990000">,</span> stop<span style="color: #990000">)::</span>_ <span style="color: #990000">-&gt;</span>
-                <span style="color: #990000">(</span>id <span style="color: #990000">^</span> <span style="color: #FF0000">".ml"</span><span style="color: #990000">,</span> <span style="font-weight: bold"><span style="color: #0000FF">true</span></span><span style="color: #990000">,</span> start<span style="color: #990000">,</span> stop<span style="color: #990000">)::</span>p
-            <span style="color: #990000">|</span> <span style="color: #009900">Some</span> <span style="color: #990000">(</span>id<span style="color: #990000">,</span>_<span style="color: #990000">,</span>_<span style="color: #990000">)::</span><span style="color: #009900">None</span><span style="color: #990000">::</span><span style="color: #009900">Some</span> <span style="color: #990000">(</span>_def<span style="color: #990000">,</span> start<span style="color: #990000">,</span> stop<span style="color: #990000">)::</span>_ <span style="color: #990000">-&gt;</span>
-                <span style="color: #990000">(</span>id<span style="color: #990000">,</span> <span style="font-weight: bold"><span style="color: #0000FF">false</span></span><span style="color: #990000">,</span> start<span style="color: #990000">,</span> stop<span style="color: #990000">)::</span>p
+            <span style="color: #990000">|</span> <span style="color: #009900">Some</span> <span style="color: #990000">(</span>id<span style="color: #990000">,</span>_<span style="color: #990000">,</span>_<span style="color: #990000">)::</span>_<span style="color: #990000">::</span><span style="color: #009900">Some</span> <span style="color: #990000">(</span>lang<span style="color: #990000">,</span>_<span style="color: #990000">,</span>_<span style="color: #990000">)::</span><span style="color: #009900">Some</span> <span style="color: #990000">(</span>_def<span style="color: #990000">,</span> start<span style="color: #990000">,</span> stop<span style="color: #990000">)::</span>_ <span style="color: #990000">-&gt;</span>
+                <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> is_file <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #000080">String</span></span><span style="color: #990000">.</span>ends_with id <span style="color: #990000">(</span><span style="color: #FF0000">"."</span> <span style="color: #990000">^</span> ext_of_lang lang<span style="color: #990000">)</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+                <span style="color: #990000">(</span>id<span style="color: #990000">,</span> is_file<span style="color: #990000">,</span> start<span style="color: #990000">,</span> stop<span style="color: #990000">)</span> <span style="color: #990000">::</span> p
             <span style="color: #990000">|</span> _ <span style="color: #990000">-&gt;</span> <span style="font-weight: bold"><span style="color: #0000FF">assert</span></span> <span style="font-weight: bold"><span style="color: #0000FF">false</span></span><span style="color: #990000">)</span> <span style="color: #990000">[]</span> re
 
+<span style="font-style: italic"><span style="color: #9A1900">(*$= find_code_definitions &amp; ~printer:dump</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">  [ "Foo.ml", true, 30, 37 ] \</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">  (find_code_definitions \</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">    ".Foo.ml: bar\n\\</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">     [source,ml]\n\\</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">     ----\n\\</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">     glop.\n\\</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">     \n\\</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">     ----\n\\</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">     I'm out!\n\\</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">     ----\n")</span></span>
+<span style="font-style: italic"><span style="color: #9A1900"> [ "Foo", false, 27, 38 ] \</span></span>
+<span style="font-style: italic"><span style="color: #9A1900"> (find_code_definitions \</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">   ".Foo: bar\n\\</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">    [source,ml]\n\\</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">    ----\n\\</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">    pas glop.\n\\</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">    \n\\</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">    ----\n")</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">*)</span></span>
+
 <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> find_file_content <span style="color: #990000">=</span>
-    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> re <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #000080">Str</span></span><span style="color: #990000">.</span>regexp <span style="color: #FF0000">"^\\.Content of \\([^\n]*\\)\n\\[source,[^\n]*\\]\n----\n\\(\\(\\([^-].*\\)?\n\\)+\\)----\n"</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
+    <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> re <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #000080">Str</span></span><span style="color: #990000">.</span>regexp <span style="color: #990000">(</span><span style="color: #FF0000">"^\\.Content of \\([^\n]*\\)\n"</span> <span style="color: #990000">^</span>
+                         <span style="color: #FF0000">"\\[source,[^\n]*\\]\n"</span> <span style="color: #990000">^</span>
+                         <span style="color: #FF0000">"----\n"</span> <span style="color: #990000">^</span>
+                         <span style="color: #FF0000">"\\(\\(\\([^-].*\\)?\n\\)+\\)"</span> <span style="color: #990000">^</span>
+                         <span style="color: #FF0000">"----\n"</span><span style="color: #990000">)</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
     fold_all_groups <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #0000FF">fun</span></span> l p <span style="color: #990000">-&gt;</span>
         <span style="font-weight: bold"><span style="color: #0000FF">match</span></span> l <span style="font-weight: bold"><span style="color: #0000FF">with</span></span>
             <span style="color: #990000">|</span> <span style="color: #009900">Some</span> <span style="color: #990000">(</span>id<span style="color: #990000">,</span>_<span style="color: #990000">,</span>_<span style="color: #990000">)::</span><span style="color: #009900">Some</span> <span style="color: #990000">(</span>_def<span style="color: #990000">,</span> start<span style="color: #990000">,</span> stop<span style="color: #990000">)::</span>_ <span style="color: #990000">-&gt;</span>
@@ -1663,13 +1754,20 @@ http://www.gnu.org/software/src-highlite -->
             <span style="color: #990000">|</span> _ <span style="color: #990000">-&gt;</span> <span style="font-weight: bold"><span style="color: #0000FF">assert</span></span> <span style="font-weight: bold"><span style="color: #0000FF">false</span></span><span style="color: #990000">)</span> <span style="color: #990000">[]</span> re
 
 <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> find_definitions str <span style="color: #990000">=</span>
-    find_ml_definitions str @ find_file_content str
+    find_code_definitions str @ find_file_content str
 
 <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> find_references <span style="color: #990000">=</span>
     <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> re <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #000080">Str</span></span><span style="color: #990000">.</span>regexp <span style="color: #FF0000">"\\((\\* \\.\\.\\.\\([^\n\\*]+\\)\\.\\.\\. \\*)\\)"</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
     fold_all_groups <span style="color: #990000">(</span><span style="font-weight: bold"><span style="color: #0000FF">fun</span></span> l p <span style="color: #990000">-&gt;</span> <span style="font-weight: bold"><span style="color: #0000FF">match</span></span> l <span style="font-weight: bold"><span style="color: #0000FF">with</span></span>
         <span style="color: #990000">|</span> <span style="color: #990000">[</span> <span style="color: #009900">Some</span> <span style="color: #990000">(</span>_<span style="color: #990000">,</span> start<span style="color: #990000">,</span> stop<span style="color: #990000">);</span> <span style="color: #009900">Some</span> <span style="color: #990000">(</span>id<span style="color: #990000">,</span> _<span style="color: #990000">,</span> _<span style="color: #990000">)</span> <span style="color: #990000">]</span> <span style="color: #990000">-&gt;</span> <span style="color: #990000">(</span>id<span style="color: #990000">,</span> start<span style="color: #990000">,</span> stop<span style="color: #990000">)::</span>p
         <span style="color: #990000">|</span> _ <span style="color: #990000">-&gt;</span> <span style="font-weight: bold"><span style="color: #0000FF">assert</span></span> <span style="font-weight: bold"><span style="color: #0000FF">false</span></span><span style="color: #990000">)</span> <span style="color: #990000">[]</span> re
+
+<span style="font-style: italic"><span style="color: #9A1900">(* Note that we have to break up the comment mark in order not to</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">   confuse qtest. *)</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">(*$= find_references &amp; ~printer:dump</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">  (find_references ("xx ("^"* ...Inventory.Make functor... *"^") yy")) \</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">    [ "Inventory.Make functor", 3, 37 ]</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">*)</span></span>
 
 <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> find_inclusions <span style="color: #990000">=</span>
     <span style="font-weight: bold"><span style="color: #0000FF">let</span></span> re <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #000080">Str</span></span><span style="color: #990000">.</span>regexp <span style="color: #FF0000">"^include::\\([^\\[\n]+\\)\\[\\([^\\[\n]*\\)\\]\n"</span> <span style="font-weight: bold"><span style="color: #0000FF">in</span></span>
@@ -1685,28 +1783,45 @@ http://www.gnu.org/software/src-highlite -->
 <div class="paragraph"><p>Notice here <code>find_file_content</code> which allows to specify in the documentation
 some content to be copied verbatim into a file. This is handy to generate files
 out of band for testing fixture for instance.</p></div>
+<div class="paragraph"><p>The small function <code>ext_of_lang</code> tries to match languages names that are
+understood by asciidoc (actually, by <code>GNU source-highlight</code>, its default source
+code highlighter) back to file extension. Most of the time, though, asciidoc
+also understand the file extension itself so we assume that&#8217;s what&#8217;s specified
+in the <code>source</code> command to make this function shorter.</p></div>
+<div class="paragraph"><p>Notice that for <code>find_references</code> we use a format that conveniently (for OCaml
+programmers) looks like OCaml comments. Since those expansion points will be
+completely replaced by their definition it does not really matter and those
+would of course work just as well regardless of the language used around. One
+may prefer to use comments for that language in order not to confuse the
+documentation generator when syntax-highlighting the code bloc. Therefore, it
+would be nice to allow for more comment style here, or to pick the proper one
+from another configuration file&#8230;</p></div>
 </div>
 </div>
 </div>
 <div class="sect1">
 <h2 id="_todo">9. TODO</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>Do not change the <code>ctime</code> of a generated file when the content is the same.
-This is to avoid Makefile rebuilding unnecessary files.  Can be done by first
-generating into a temp file and then comparing the sizes and content of the
-file.  May be guarded by an option?</p></div>
-<div class="paragraph"><p>Indenting the generated source code makes column positions reported by compilers
-(and other tools such as annot for OCaml) different from the one in the source
-document, which somewhat defeats the line number information feature. Therefore
-it should be possible to disable indentation altogether for more accurate position
-reporting.</p></div>
+<div class="paragraph"><p>A mode in which portia just output Makefile compliant dependencies.</p></div>
+<div class="paragraph"><p>Indenting the generated source code makes column positions reported by
+compilers (and other tools such as annot for OCaml) different from the one in
+the source document, which somewhat defeats the line number information
+feature. Therefore it should be possible to disable indentation altogether for
+more accurate position reporting.</p></div>
+<div class="paragraph"><p>Add a warning at the beginning of generated files that they are automatically
+generated and should not be edited manually.</p></div>
+<div class="paragraph"><p>Do not output linenum for shell because they mess with the shebang.
+<code>tests/*.expected</code> is another case of annoying linenum. Implement <code>per
+language linenum</code> as suggested at the end of <code>config.fw</code>. In other words,
+<code>find_definitions</code> should return the language (the file extension is good
+enough).</p></div>
 </div>
 </div>
 </div>
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2015-11-12 20:56:19 CET
+Last updated 2016-12-24 11:25:03 CET
 </div>
 </div>
 </body>
