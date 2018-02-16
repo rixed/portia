@@ -91,7 +91,10 @@ clean:
 	@$(MAKE) -C tests clean
 
 distclean: clean
-	@$(RM) -f $(BACKEND_SOURCES:.ml=.cmo) portia.byte portia.opt portia
+	@$(RM) $(BACKEND_SOURCES:.ml=.cmo) portia.byte portia.opt portia
+
+cleansources:
+	@$(RM) $(GEN_SOURCES)
 
 loc: $(GEN_SOURCES)
 	@cat $^ | wc -l

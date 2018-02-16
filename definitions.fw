@@ -319,14 +319,14 @@ let read_file fname offset size =
     let open Unix in
     let fd = openfile fname [O_RDONLY] 0 in
     lseek fd offset SEEK_SET |> ignore ;
-    let str = String.create size in
+    let str = Bytes.create size in
     let rec read_chunk prev =
         if prev < size then
             let act_sz = read fd str prev (size-prev) in
             read_chunk (prev + act_sz) in
     read_chunk 0 ;
     close fd ;
-    str
+    Bytes.to_string str
 @}
 ----
 
