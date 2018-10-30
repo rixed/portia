@@ -13,7 +13,7 @@ build-test: [[make "check"]]
 install: [make "install"]
 remove: ["ocamlfind" "remove" "portia"]
 depends: [
-  "ocamlfind"
+  "ocamlfind" {build}
   "batteries"
   "qtest" {test}
 ]
