@@ -45,7 +45,7 @@ fwdepend: $(FW_SOURCES)
 include fwdepend
 
 $(GEN_SOURCES): $(FW_SOURCES)
-	@if test -x portia && \
+	@if test -x ./portia && \
 		test -e funnelweb.cmo && \
 		test -e ocaml.cmo ; then \
 		echo "Using Portia to build $@ :-)" ;\
