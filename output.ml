@@ -1,5 +1,7 @@
+
 # 50 "output.fw"
 open Batteries
+
 
 # 15 "output.fw"
 open PortiaDefinition
@@ -13,7 +15,7 @@ let read_file filename =
 let definition filename def =
     if def.output then (
         PortiaLog.debug "Generating %s...\n%!" filename ;
-        let text = expanded_body 0 def |>
+        let text = expanded_body def |>
                    !PortiaConfig.postprocess in
         let content_is_new = match read_file filename with
         | exception _ -> true
@@ -29,5 +31,6 @@ let definition filename def =
 (* output all registered definitions *)
 let all () =
     Hashtbl.iter definition registry
+
 # 52 "output.fw"
 

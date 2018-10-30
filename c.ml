@@ -1,5 +1,6 @@
-# 353 "definitions.fw"
+
+# 300 "definitions.fw"
 let linenum lineno fname =
-    Printf.sprintf "#line %d \"%s\"\n" (lineno+1) fname
+    Printf.sprintf "#line %d \"%s\"" (lineno+1) fname
 
 let () = PortiaConfig.linenum := linenum

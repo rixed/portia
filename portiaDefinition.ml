@@ -1,7 +1,10 @@
-# 380 "definitions.fw"
+
+# 327 "definitions.fw"
 open Batteries
 
+
 # 84 "definitions.fw"
+
 # 48 "definitions.fw"
 type location = { file : string ;
                  mtime : float ;
@@ -11,6 +14,7 @@ type location = { file : string ;
                   size : int }
 # 84 "definitions.fw"
 
+
 # 69 "definitions.fw"
 type id = string
 # 85 "definitions.fw"
@@ -18,21 +22,11 @@ type id = string
 type t = { locs : location list ; (* reverse order *)
              id : id ;
          output : bool }
-# 382 "definitions.fw"
 
-# 292 "definitions.fw"
-let indent =
-    let open Str in
-    let re = regexp "\n\\([^\n]\\)" in
-    fun tab str ->
-        let spaces = String.make tab ' ' in
-        spaces ^ global_replace re ("\n"^ spaces ^"\\1") str
+# 329 "definitions.fw"
 
-(*$= indent & ~printer:identity
-  "glop"   (indent 0 "glop")
-  "  glop" (indent 2 "glop")
-*)
 
+# 251 "definitions.fw"
 (* first char is at column 0 *)
 let colno_at txt =
     let rec aux colno p =
@@ -59,7 +53,9 @@ let read_file fname offset size =
     read_chunk 0 ;
     close fd ;
     Bytes.to_string str
-# 383 "definitions.fw"
+
+# 330 "definitions.fw"
+
 
 # 182 "definitions.fw"
 let location_in_file file offset size =
@@ -68,7 +64,9 @@ let location_in_file file offset size =
     let colno = colno_at txt
     and lineno = lineno_at offset txt in
     { file ; offset ; size ; mtime ; lineno ; colno }
-# 384 "definitions.fw"
+
+# 331 "definitions.fw"
+
 
 # 108 "definitions.fw"
 let location_print fmt loc =
@@ -85,6 +83,7 @@ let rec locations_print fmt = function
 
 let print fmt t =
     Printf.fprintf fmt "%s@%a" t.id locations_print t.locs
+
 # 131 "definitions.fw"
 exception FileChanged of string
 let fetch_loc loc =
@@ -93,6 +92,7 @@ let fetch_loc loc =
     if (stat fname).st_mtime > loc.mtime then
         raise (FileChanged fname) ;
     read_file fname loc.offset loc.size
+
 # 150 "definitions.fw"
 
 let ignore_missing = ref false
@@ -116,42 +116,18 @@ let lookup id =
             Printf.fprintf stderr "Cannot find definition for '%s'\n" id ;
             exit 1
         )
+
 # 199 "definitions.fw"
 
-let line_start txt offset =
-    let rec loop c =
-        if c < 1 || txt.[c-1] = '\n' then c
-        else loop (c-1) in
-    let start_pos = loop offset in
-    String.sub txt start_pos (offset - start_pos)
+let linenum lineno file =
+  let txt = !PortiaConfig.linenum lineno file in
+  if txt = "" then "" else "\n" ^ txt ^ "\n"
 
-(*$= line_start & ~printer:identity
-  (line_start "glop" 0) ""
-  (line_start "glop" 2) "gl"
-  (line_start "glop\npas glop\n" 4) "glop"
-  (line_start "glop\npas glop\n" 5) ""
-  (line_start "glop\npas glop\n" 7) "pa"
-*)
-
-let indent_at unexpanded start =
-    line_start unexpanded start |>
-    String.fold_left (fun (need_nl, len) c ->
-        (if Char.is_whitespace c then need_nl else true),
-        len+1) (false, 0)
-
-(*$= indent_at & ~printer:dump
-  (indent_at "glop" 0) (false, 0)
-  (indent_at "glop" 2) (true, 2)
-  (indent_at "glop\npas glop\n" 4) (true, 4)
-  (indent_at "glop\npas glop\n" 5) (false, 0)
-  (indent_at "glop\npas glop\n" 7) (true, 2)
-*)
-
-let rec expanded_loc tab loc =
+let rec expanded_loc loc =
     let unexpanded = fetch_loc loc in
     PortiaLog.debug "expand '%s'\n" unexpanded ;
     (* Start with line number information. *)
-    let txt = !PortiaConfig.linenum loc.lineno loc.file in
+    let txt = linenum loc.lineno loc.file in
     (* find_references returns a list of (id, start_offset, stop_offset) *)
     let refs = !PortiaConfig.find_references unexpanded |>
                List.sort (fun (_,o1,_) (_,o2,_) -> compare o1 o2) in
@@ -160,45 +136,31 @@ let rec expanded_loc tab loc =
     let txt, last_stop =
         List.fold_left (fun (txt,last_stop) (id,start,stop) ->
             assert (start >= last_stop) ;
-            let need_new_line, tab' = indent_at unexpanded start in
-            (* If we do not need a new_line it's because we have only blanks
-               before the expansion, and we do not want to copy those because
-               every body must start at column 0 *)
-            let start = if need_new_line then start else start - tab' in
-            if not need_new_line then (
-                PortiaLog.debug "no new line needed, tab=%d, tab'=%d\n" tab tab'
-            ) ;
             let txt = txt ^
-                      indent tab (String.sub unexpanded last_stop
-                                             (start - last_stop)) in
-            if not need_new_line then (
-                PortiaLog.debug "appended '%s'\n"
-                    (String.sub unexpanded last_stop (start - last_stop))
-            );
-            let txt = if need_new_line then txt ^ "\n" else txt in
+                      (String.sub unexpanded last_stop
+                                  (start - last_stop)) in
+            PortiaLog.debug "appended '%s'\n"
+                (String.sub unexpanded last_stop (start - last_stop)) ;
 
             let t' = lookup id in
-            let body = expanded_body (tab+tab') t' in
+            let body = expanded_body t' in
             let txt = txt ^ body in
 
             (* add a linenum indication that we are back in this block *)
-            let ln = !PortiaConfig.linenum
-                         (loc.lineno + (lineno_at stop unexpanded))
-                         loc.file in
             let txt = txt ^
-                (if String.length ln > 0 &&
-                    String.length txt > 0 &&
-                    txt.[String.length txt - 1] != '\n' then
-                    "\n" else "") ^ ln in
+                      linenum
+                          (loc.lineno + (lineno_at stop unexpanded))
+                          loc.file in
             txt, stop)
             (txt, 0) refs in
     (* Complete with what's left *)
     let rest = String.length unexpanded - last_stop in
-    txt ^ indent tab (String.sub unexpanded last_stop rest)
+    txt ^ String.sub unexpanded last_stop rest
 
-and expanded_body tab t =
+and expanded_body t =
     List.rev t.locs |>
-    List.map (expanded_loc tab) |>
+    List.map expanded_loc |>
     String.concat ""
-# 385 "definitions.fw"
+
+# 332 "definitions.fw"
 

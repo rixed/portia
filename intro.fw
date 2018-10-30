@@ -109,12 +109,6 @@ include::misc.fw[]
 
 A mode in which portia just output Makefile compliant dependencies.
 
-Indenting the generated source code makes column positions reported by
-compilers (and other tools such as annot for OCaml) different from the one in
-the source document, which somewhat defeats the line number information
-feature. Therefore it should be possible to disable indentation altogether for
-more accurate position reporting.
-
 Add a warning at the beginning of generated files that they are automatically
 generated and should not be edited manually.
 
