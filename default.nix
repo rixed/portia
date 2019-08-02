@@ -2,7 +2,7 @@
 
 stdenv.mkDerivation rec {
   pname = "portia";
-  version = "1.2";
+  version = "1.3";
 
   src = fetchFromGitHub {
     owner = "rixed";
