@@ -10,11 +10,11 @@ Indent_test1.ml: indent_tests.adoc
 # Check we do not alter ctime when we touch a doc and rebuild:
 .PHONY: test_ctime
 test_ctime: Indent_test1.ml
-	@before=$$(stat -f %Dm $<) ;\
+	@before=$$(stat --format %D $<) ;\
 	 touch indent_tests.adoc ;\
 	 $(MAKE) $< ;\
-	 after=$$(stat -f %Dm $<) ;\
-	 test $$before -eq $$after
+	 after=$$(stat --format %D $<) ;\
+	 test "$$before" -eq "$$after"
 
 .PHONY: clean
 clean:
