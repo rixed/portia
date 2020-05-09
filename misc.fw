@@ -38,11 +38,12 @@ that's the documentation format I intend to use in the future:
 open Batteries
 open PortiaParse
 
-let ext_of_lang = function
-    | "shell" | "bash" | "csh" -> "sh"
-    | "autoconf" -> "m4"
-    | "docbook" -> "xml"
-    | x -> x
+let exts_of_lang = function
+    | "shell" | "bash" -> [ ".sh"; ".bash" ]
+    | "autoconf" -> [ ".m4" ]
+    | "docbook" -> [ ".xml" ]
+    | "c" -> [ ".c"; ".h" ]
+    | x -> [ "." ^ x ]
 
 let find_code_definitions =
     let re = Str.regexp ("^\\.\\([^:\n]+\\)\\(:[^\n]*\\)?\n" ^
@@ -53,7 +54,10 @@ let find_code_definitions =
     fold_all_groups (fun l p ->
         match l with
             | Some (id,_,_)::_::Some (lang,_,_)::Some (_def, start, stop)::_ ->
-                let is_file = String.ends_with id ("." ^ ext_of_lang lang) in
+                let is_file =
+                  exts_of_lang lang |>
+                  List.exists (fun ext -> String.ends_with id ext)
+                in
                 (id, is_file, start, stop) :: p
             | _ -> assert false) [] re
 
