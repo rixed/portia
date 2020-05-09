@@ -8,7 +8,7 @@
 (define-public portia
   (package
     (name "portia")
-    (version "1.3")
+    (version "1.4")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://github.com/rixed/" name "/archive/v"
@@ -16,7 +16,7 @@
               (file-name (string-append name "-" version ".tar.gz"))
               (sha256
                (base32
-                "1q3pi1g56xqqg1g33rnyhnkc146xx0yxmijp6pzh4dqi0490zjdh"))))
+                "14gmdcdwxq3hppwhv639nvx0kydjpjcggzcwnlap74w5iqc7adj6"))))
     (build-system ocaml-build-system)
     (arguments
       `(#:phases
