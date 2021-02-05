@@ -1,21 +1,26 @@
 
-# 99 "main.fw"
+# 105 "main.fw"
 open Batteries
 
 
 # 51 "main.fw"
-let load_lib libdir fname =
-    let libname = libdir ^"/"^ fname ^".cmo" in
-    PortiaLog.debug "loading lib %s\n" libname ;
-    Dynlink.(loadfile (adapt_filename libname))
+let rec load_lib libdir fname =
+    match libdir with
+    | [] ->
+        failwith ("Cannot find plugin "^ fname)
+    | d :: libdir ->
+        let libname = d ^"/"^ fname ^".cmo" in
+        PortiaLog.debug "loading lib %s\n" libname ;
+        (try Dynlink.(loadfile (adapt_filename libname))
+        with _ -> load_lib libdir fname)
 
-# 101 "main.fw"
+# 107 "main.fw"
 
 
-# 66 "main.fw"
+# 71 "main.fw"
 let main =
     let plugins = ref [] in
-    let libdir = ref PkgConfig.plugindir in
+    let libdir = ref [] in
     let outdir = ref "" in
     let srcfiles = ref [] in
     let addlst l s = l := s :: !l in
@@ -23,7 +28,7 @@ let main =
         [ "-syntax", String (addlst plugins),
                      "Name of the plugin to use for parsing files \
                       (default to funnelweb)" ;
-          "-libdir", Set_string libdir,
+          "-libdir", String (addlst libdir),
                      "Where to read plugins from" ;
           "-outdir", Set_string outdir,
                      "Where to write output files" ;
@@ -38,6 +43,7 @@ let main =
          portia [options] files...\n\
          Will output source code from given files.\n") ;
     if !plugins = [] then addlst plugins "funnelweb" ; (* default syntax *)
+    if !libdir = [] then addlst libdir PkgConfig.plugindir ; (* default plugin dir *)
     
 # 32 "main.fw"
 
@@ -45,8 +51,8 @@ List.iter (load_lib !libdir) !plugins ;
 List.iter PortiaParse.parse !srcfiles ;
 Output.all !outdir
 
-# 91 "main.fw"
+# 97 "main.fw"
 
 
-# 102 "main.fw"
+# 108 "main.fw"
 
