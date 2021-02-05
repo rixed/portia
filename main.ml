@@ -1,5 +1,5 @@
 
-# 96 "main.fw"
+# 99 "main.fw"
 open Batteries
 
 
@@ -9,13 +9,14 @@ let load_lib libdir fname =
     PortiaLog.debug "loading lib %s\n" libname ;
     Dynlink.(loadfile (adapt_filename libname))
 
-# 98 "main.fw"
+# 101 "main.fw"
 
 
 # 66 "main.fw"
 let main =
     let plugins = ref [] in
     let libdir = ref PkgConfig.plugindir in
+    let outdir = ref "" in
     let srcfiles = ref [] in
     let addlst l s = l := s :: !l in
     Arg.(parse
@@ -24,6 +25,8 @@ let main =
                       (default to funnelweb)" ;
           "-libdir", Set_string libdir,
                      "Where to read plugins from" ;
+          "-outdir", Set_string outdir,
+                     "Where to write output files" ;
           "-ignore-missing", Set PortiaDefinition.ignore_missing,
                      "Referenced  but never defined blocks are not \
                       an error" ;
@@ -40,10 +43,10 @@ let main =
 
 List.iter (load_lib !libdir) !plugins ;
 List.iter PortiaParse.parse !srcfiles ;
-Output.all ()
+Output.all !outdir
 
-# 88 "main.fw"
+# 91 "main.fw"
 
 
-# 99 "main.fw"
+# 102 "main.fw"
 

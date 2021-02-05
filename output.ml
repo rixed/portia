@@ -1,5 +1,5 @@
 
-# 50 "output.fw"
+# 52 "output.fw"
 open Batteries
 
 
@@ -12,8 +12,10 @@ let read_file filename =
    String.concat "\n") ^ "\n"
 
 (* output a given definition *)
-let definition filename def =
+let definition outdir filename def =
     if def.output then (
+        let filename = if outdir = "" then filename
+                       else outdir ^"/"^ filename in
         PortiaLog.debug "Generating %s...\n%!" filename ;
         let text = expanded_body def |>
                    !PortiaConfig.postprocess in
@@ -29,8 +31,8 @@ let definition filename def =
     )
 
 (* output all registered definitions *)
-let all () =
-    Hashtbl.iter definition registry
+let all outdir =
+    Hashtbl.iter (definition outdir) registry
 
-# 52 "output.fw"
+# 54 "output.fw"
 
