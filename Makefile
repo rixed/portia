@@ -91,7 +91,7 @@ clean:
 	@$(MAKE) -C tests clean
 
 distclean: clean
-	@$(RM) $(BACKEND_SOURCES:.ml=.cmo) portia.byte portia.opt portia
+	@$(RM) $(BACKEND_SOURCES:.ml=.cmo) portia.byte portia.opt portia.cma portia all_tests.byte
 
 cleansources:
 	@$(RM) $(GEN_SOURCES)
@@ -104,6 +104,7 @@ install: all
 
 uninstall:
 	ocamlfind remove portia
+
 reinstall: uninstall install
 
 # Unit tests
@@ -121,4 +122,3 @@ check: all_tests.byte
 	@echo "Running inline tests"
 	@timeout 10s ./$< || echo "Fail!"
 	@$(MAKE) -C tests || echo "Fail!"
-

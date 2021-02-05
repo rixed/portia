@@ -1,7 +1,7 @@
 { stdenv, fetchFromGitHub, ocaml, findlib, batteries }:
 
-stdenv.mkDerivation (rec {
-  pname = "portia";
+stdenv.mkDerivation rec {
+  pname = "ocaml${ocaml.version}-portia";
   version = "1.3";
 
   src = fetchFromGitHub {
@@ -13,12 +13,10 @@ stdenv.mkDerivation (rec {
 
   buildInputs = [ ocaml findlib batteries ];
 
+  # Despite portia can be considered a normal application program with
+  # some plugins, those plugins need to link with portia.cma, so it's
+  # much easier to install everything as a findlib package:
   createFindlibDestdir = true;
-
-  postInstall = ''
-    mkdir -p $out/bin
-    cp portia $out/bin
-  '';
 
   dontStrip = !ocaml.nativeCompilers;
 
@@ -28,4 +26,4 @@ stdenv.mkDerivation (rec {
     platforms = ocaml.meta.platforms or [];
     maintainers = [ maintainers.rixed ];
   };
-})
+}
