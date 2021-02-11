@@ -1,9 +1,9 @@
 
-# 105 "main.fw"
+# 108 "main.fw"
 open Batteries
 
 
-# 51 "main.fw"
+# 54 "main.fw"
 let rec load_lib libdir fname =
     match libdir with
     | [] ->
@@ -14,10 +14,10 @@ let rec load_lib libdir fname =
         (try Dynlink.(loadfile (adapt_filename libname))
         with _ -> load_lib libdir fname)
 
-# 107 "main.fw"
+# 110 "main.fw"
 
 
-# 71 "main.fw"
+# 74 "main.fw"
 let main =
     let plugins = ref [] in
     let libdir = ref [] in
@@ -47,12 +47,15 @@ let main =
     
 # 32 "main.fw"
 
-List.iter (load_lib !libdir) !plugins ;
-List.iter PortiaParse.parse !srcfiles ;
-Output.all !outdir
+try
+  List.iter (load_lib !libdir) !plugins ;
+  List.iter PortiaParse.parse !srcfiles ;
+  Output.all !outdir
+with Failure msg ->
+  Printf.eprintf "Error: %s\n" msg
 
-# 97 "main.fw"
+# 100 "main.fw"
 
 
-# 108 "main.fw"
+# 111 "main.fw"
 

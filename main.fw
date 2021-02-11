@@ -30,9 +30,12 @@ of source files to proceed `srcfiles`, looks like:
 [source,ml]
 ----
 @$@<Skeleton@>==@{
-List.iter (load_lib !libdir) !plugins ;
-List.iter PortiaParse.parse !srcfiles ;
-Output.all !outdir
+try
+  List.iter (load_lib !libdir) !plugins ;
+  List.iter PortiaParse.parse !srcfiles ;
+  Output.all !outdir
+with Failure msg ->
+  Printf.eprintf "Error: %s\n" msg
 @}
 ----
 
