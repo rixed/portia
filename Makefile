@@ -8,8 +8,8 @@ OCAMLOPT   = ocamlfind ocamlopt
 OCAMLDEP   = ocamlfind ocamldep
 QTEST      = qtest
 top_srcdir = .
-override OCAMLOPTFLAGS += $(INCS) -w Ael-31-33-40-41-42-44-45 -g -annot -I $(top_srcdir)
-override OCAMLFLAGS    += $(INCS) -w Ael-31-33-40-41-42-44-45 -g -annot -I $(top_srcdir)
+override OCAMLOPTFLAGS += $(INCS) -w +A-e-l-31-33-40-41-42-44-45-70 -g -annot -I $(top_srcdir)
+override OCAMLFLAGS    += $(INCS) -w +A-e-l-31-33-40-41-42-44-45-70 -g -annot -I $(top_srcdir)
 REQUIRES = batteries dynlink
 
 .PHONY: clean install uninstall reinstall doc loc
