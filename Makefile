@@ -12,7 +12,7 @@ override OCAMLOPTFLAGS += $(INCS) -w +A-e-l-31-33-40-41-42-44-45-70 -g -annot -I
 override OCAMLFLAGS    += $(INCS) -w +A-e-l-31-33-40-41-42-44-45-70 -g -annot -I $(top_srcdir)
 REQUIRES = batteries dynlink
 
-.PHONY: clean install uninstall reinstall doc loc
+.PHONY: clean install uninstall reinstall doc loc touch-sources
 .SUFFIXES: .ml .mli .cmo .cmi .cmx .cmxs .fw
 
 FW_SOURCES = $(wildcard *.fw) main.fw
@@ -57,7 +57,8 @@ $(GEN_SOURCES): $(FW_SOURCES)
 
 # We'd be glad to depend on *.ml but ocamldep is so slow...
 # Use "make -B depend" when you know you changed dependencies.
-depend: $(GEN_SOURCES)
+depend:
+	$(MAKE) $(GEN_SOURCES)
 	$(OCAMLDEP) $(SYNTAX) -package "$(REQUIRES)" *.ml > $@
 include depend
 
@@ -70,24 +71,21 @@ portia.opt:  $(PROG_SOURCES:.ml=.cmx)
 pkgConfig.ml:
 	echo 'let plugindir = "$(PLUGINDIR)"' > $@
 
-.ml.cmo:
+%.cmo %.cmi &: %.ml
 	$(OCAMLC) $(SYNTAX) -package "$(REQUIRES)" $(OCAMLFLAGS) -c $<
 
-.mli.cmi:
-	$(OCAMLC) $(SYNTAX) -package "$(REQUIRES)" $(OCAMLFLAGS) -c $<
-
-.ml.cmx:
+%.cmx: %.ml
 	$(OCAMLOPT) $(SYNTAX) -package "$(REQUIRES)" $(OCAMLOPTFLAGS) -c $<
 
-.ml.cmxs:
+%.cmxs: %.ml
 	$(OCAMLOPT) $(SYNTAX) -package "$(REQUIRES)" $(OCAMLOPTFLAGS) -o $@ -shared $<
 
 portia.cma: $(LIB_SOURCES:.ml=.cmo) $(LIB_SOURCES:.ml=.cmi)
 	$(OCAMLC) $(SYNTAX) -package "$(REQUIRES)" -a -o $@ -custom -linkpkg $(OCAMLFLAGS) $(LIB_SOURCES:.ml=.cmo)
 
 clean:
-	@$(RM) -f *.[aso] *.cmi *.annot *.lis *.html $(PROG_SOURCES:.ml=.cmo) \
-	 all_tests.ml depend fwdepend
+	@$(RM) *.[aso] *.cmi *.cmt *.annot *.lis *.html $(PROG_SOURCES:.ml=.cmo) \
+	  all_tests.ml depend fwdepend
 	@$(MAKE) -C tests clean
 
 distclean: clean
@@ -106,6 +104,11 @@ uninstall:
 	ocamlfind remove portia
 
 reinstall: uninstall install
+
+# After `git clone` the timestamps of the generated files might not be newer than their sources:
+touch-sources:
+	@sleep 1
+	@touch $(GEN_SOURCES)
 
 # Unit tests
 

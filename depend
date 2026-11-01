@@ -1,0 +1,62 @@
+asciidoc.cmo : \
+    portiaParse.cmo \
+    portiaConfig.cmo
+asciidoc.cmx : \
+    portiaParse.cmx \
+    portiaConfig.cmx
+c.cmo : \
+    portiaConfig.cmo
+c.cmx : \
+    portiaConfig.cmx
+funnelweb.cmo : \
+    portiaParse.cmo \
+    portiaLog.cmo \
+    portiaConfig.cmo
+funnelweb.cmx : \
+    portiaParse.cmx \
+    portiaLog.cmx \
+    portiaConfig.cmx
+main.cmo : \
+    portiaParse.cmo \
+    portiaLog.cmo \
+    portiaDefinition.cmo \
+    pkgConfig.cmo \
+    output.cmo
+main.cmx : \
+    portiaParse.cmx \
+    portiaLog.cmx \
+    portiaDefinition.cmx \
+    pkgConfig.cmx \
+    output.cmx
+ocaml.cmo : \
+    portiaConfig.cmo
+ocaml.cmx : \
+    portiaConfig.cmx
+output.cmo : \
+    portiaLog.cmo \
+    portiaDefinition.cmo \
+    portiaConfig.cmo
+output.cmx : \
+    portiaLog.cmx \
+    portiaDefinition.cmx \
+    portiaConfig.cmx
+pkgConfig.cmo :
+pkgConfig.cmx :
+portiaConfig.cmo :
+portiaConfig.cmx :
+portiaDefinition.cmo : \
+    portiaLog.cmo \
+    portiaConfig.cmo
+portiaDefinition.cmx : \
+    portiaLog.cmx \
+    portiaConfig.cmx
+portiaLog.cmo :
+portiaLog.cmx :
+portiaParse.cmo : \
+    portiaLog.cmo \
+    portiaDefinition.cmo \
+    portiaConfig.cmo
+portiaParse.cmx : \
+    portiaLog.cmx \
+    portiaDefinition.cmx \
+    portiaConfig.cmx
