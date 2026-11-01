@@ -1,6 +1,6 @@
 opam-version: "2.0"
 name: "portia"
-version: "1.5"
+version: "1.6"
 maintainer: "Cedric Cellier <rixed@happyleptic.org>"
 authors: "Cedric Cellier <rixed@happyleptic.org>"
 homepage: "https://github.com/rixed/portia"
@@ -37,7 +37,3 @@ depexts: [
 post-messages: [
   "This package requires asciidoc to build the doc." {failure}
 ]
-url {
-  src: "https://github.com/rixed/portia/archive/v1.5.tar.gz"
-  checksum: "md5=cecaaa6a081fc065cee8849ada8a76a1"
-}
