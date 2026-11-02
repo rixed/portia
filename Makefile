@@ -85,14 +85,14 @@ portia.cma: $(LIB_SOURCES:.ml=.cmo) $(LIB_SOURCES:.ml=.cmi)
 
 clean:
 	@$(RM) *.[aso] *.cmi *.cmt *.annot *.lis *.html $(PROG_SOURCES:.ml=.cmo) \
-	  all_tests.ml depend fwdepend
+	  all_tests.ml
 	@$(MAKE) -C tests clean
 
 distclean: clean
 	@$(RM) $(BACKEND_SOURCES:.ml=.cmo) portia.byte portia.opt portia.cma portia all_tests.byte
 
 cleansources:
-	@$(RM) $(GEN_SOURCES)
+	@$(RM) $(GEN_SOURCES) depend fwdepend
 
 loc: $(GEN_SOURCES)
 	@cat $^ | wc -l
@@ -108,7 +108,7 @@ reinstall: uninstall install
 # After `git clone` the timestamps of the generated files might not be newer than their sources:
 touch-sources:
 	@sleep 1
-	@touch $(GEN_SOURCES)
+	@touch $(GEN_SOURCES) depend fwdepend
 
 # Unit tests
 
