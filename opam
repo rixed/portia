@@ -32,7 +32,7 @@ depends: [
   "qtest" {with-test}
 ]
 depexts: [
-  ["asciidoc"] {os-family = "debian"}
+  ["asciidoc"] {with-doc & os-family = "debian"}
 ]
 post-messages: [
   "This package requires asciidoc to build the doc." {failure}
