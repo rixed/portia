@@ -19,7 +19,7 @@ source files are also available.
     @}
 """
 build: [
-  [make touch-sources]
+  [make "touch-sources"]
   [make]
   [make "check"] {with-test}
   [make "doc"] {with-doc}
